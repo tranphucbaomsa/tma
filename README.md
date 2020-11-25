@@ -18,12 +18,8 @@ What things you need to install the software and how to install them
 
 ```
 Python 3.6+
-
+Visual Studio Code
 ```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
 
 Start by open up a terminal session and run the following command to install the packages we’ll need:
 
@@ -31,66 +27,92 @@ Start by open up a terminal session and run the following command to install the
 pip install beautifulsoup4 requests pandas
 ```
 
-And repeat
+* beautifulsoup4: Allows us to parse the HTML of the site and convert it to a BeautifulSoup object, which represents the HTML as a nested data structure.
+* requests: The package that allows us to connect the site of choice.
+* pandas: The goto Python package for dataset manipulation  
+
+### Documentation
+    
+We can then import these at begin:
 
 ```
-until finished
+import bs4
+import pandas as pd
+import requests
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
+Let’s connect to the IMDB top 100 movies webpage, extract the HTML behind it and convert it to a BeautifulSoup object:
 
 ```
-Give an example
+url = 'https://www.imdb.com/search/title/?count=100&groups=top_1000&sort=user_rating'
+
+def get_page_contents(url):
+    page = requests.get(url, headers={"Accept-Language": "en-US"})
+    return bs4.BeautifulSoup(page.text, "html.parser")
+    
+soup = get_page_contents(url)
 ```
 
-### And coding style tests
+After taking a look at the IMDB webpage, we’ll set out to extract (all highlighted in the above screenshot of the page):
 
-Explain what these tests test and why
+*  Movie title
+*  Release year
+*  Runtime
+*  Audience rating
+*  Genre
+*  IMDB rating
+*  Number of votes
+*  Box office earnings
+*  Director
+*  Primary actors
+
+We can get a list of all distinct movies and their corresponding HTML by:
 
 ```
-Give an example
+movies = soup.findAll('h3', class_='lister-item-header')
 ```
 
-## Deployment
+Thus, we can construct a list of all movie titles
 
-Add additional notes about how to deploy this on a live system
+```
+titles = [movie.find('a').text for movie in movies]
+```
 
-## Built With
+Release years can be found under the tag span and class lister-item-year text-muted unbold. To grab these, we can follow a similar approach as before:
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+```
+release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
+```
 
-## Contributing
+To grab the IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+```
+movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
+```
 
-## Versioning
+Doing so we can use findAll and grab the first element as votes and the second as earnings
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+```
+votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
+earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
+```
 
-## Authors
+The director is the 1st a tag, we can extract this information through:
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+```
+director = movie.find('p').find('a').text
+```
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+and, since the actors always correspond to the remaining a tags, we can grab these through:
 
-## License
+```
+actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
+```
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+## Running the code
 
-## Acknowledgments
+The above demo should result in a data frame similar to:
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+![Image of Yaktocat](https://miro.medium.com/max/700/1*pdpHtgtksNsh6gV0x4LIQQ.png)
 
 
