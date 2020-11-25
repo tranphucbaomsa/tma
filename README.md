@@ -6,6 +6,10 @@ Many data analysis, big data, and machine learning projects require scraping web
 
 Web scraping simply means to automatically gather information/data from a website.
 
+For this tutorial on web scraping we’ll go ahead and create a dataset from the 100 highest user rated movies on IMDB:
+
+![Image of Yaktocat](https://miro.medium.com/max/700/1*i0pULjJvx7wtnvFcUGMGKA.png)
+
 ### Prerequisites
 
 Before working on this tutorial, you should have a local or server-based Python programming environment set up on your machine (https://www.python.org/).
