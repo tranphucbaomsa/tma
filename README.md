@@ -32,27 +32,12 @@ pip install beautifulsoup4 requests pandas
 * pandas: The goto Python package for dataset manipulation  
 
 ### Documentation
+
+We have 2 file in project:
+
+* CrawlerLibrary.py: This is a library file for scraping website.
+* BeautifulSoupCrawler.py: This is the main file of the program using the library file (CrawlerLibrary.py)
     
-We can then import these at begin:
-
-```
-import bs4
-import pandas as pd
-import requests
-```
-
-Let’s connect to the IMDB top 100 movies webpage, extract the HTML behind it and convert it to a BeautifulSoup object:
-
-```
-url = 'https://www.imdb.com/search/title/?count=100&groups=top_1000&sort=user_rating'
-
-def get_page_contents(url):
-    page = requests.get(url, headers={"Accept-Language": "en-US"})
-    return bs4.BeautifulSoup(page.text, "html.parser")
-    
-soup = get_page_contents(url)
-```
-
 After taking a look at the IMDB webpage, we’ll set out to extract (all highlighted in the above screenshot of the page):
 
 *  Movie title
@@ -66,58 +51,16 @@ After taking a look at the IMDB webpage, we’ll set out to extract (all highlig
 *  Director
 *  Primary actors
 
-We can get a list of all distinct movies and their corresponding HTML by:
-
-```
-movies = soup.findAll('h3', class_='lister-item-header')
-```
-
-Thus, we can construct a list of all movie titles
-
-```
-titles = [movie.find('a').text for movie in movies]
-```
-
-Release years can be found under the tag span and class lister-item-year text-muted unbold. To grab these, we can follow a similar approach as before:
-
-```
-release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
-```
-
-To grab the IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
-
-```
-movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
-```
-
-Doing so we can use findAll and grab the first element as votes and the second as earnings
-
-```
-votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
-earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
-```
-
-The director is the 1st a tag, we can extract this information through:
-
-```
-director = movie.find('p').find('a').text
-```
-
-and, since the actors always correspond to the remaining a tags, we can grab these through:
-
-```python
-actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
-```
-
 ## Running the code
 
-The above demo should result in a data frame similar to:
+The top 100 movies will show as:
 
 ![Image of Yaktocat](https://miro.medium.com/max/700/1*pdpHtgtksNsh6gV0x4LIQQ.png)
 
-And, we will have csv file from above data frame by:
 
-```
-df.to_csv("D:\\ExportDocument\\datacamp130818.csv", header=True, index=False)
-```
+## Reference
+
+*  Beautiful Soup: https://pypi.org/project/beautifulsoup4/
+*  Python Requests Module: https://pypi.org/project/requests/
+*  Python Data Analysis Library: https://pandas.pydata.org/
 
