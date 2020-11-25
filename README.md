@@ -105,7 +105,7 @@ director = movie.find('p').find('a').text
 
 and, since the actors always correspond to the remaining a tags, we can grab these through:
 
-```
+```python
 actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
 ```
 
@@ -115,4 +115,9 @@ The above demo should result in a data frame similar to:
 
 ![Image of Yaktocat](https://miro.medium.com/max/700/1*pdpHtgtksNsh6gV0x4LIQQ.png)
 
+And, we will have csv file from above data frame by:
+
+```
+df.to_csv("D:\\ExportDocument\\datacamp130818.csv", header=True, index=False)
+```
 
