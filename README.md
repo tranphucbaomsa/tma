@@ -63,4 +63,5 @@ The top 100 movies will show as:
 *  Beautiful Soup: https://pypi.org/project/beautifulsoup4/
 *  Python Requests Module: https://pypi.org/project/requests/
 *  Python Data Analysis Library: https://pandas.pydata.org/
+*  Modules in Python 3: https://www.digitalocean.com/community/tutorials/how-to-import-modules-in-python-3
 
