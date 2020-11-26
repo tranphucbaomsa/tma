@@ -6,7 +6,8 @@ import bs4
 import pandas as pd
 import requests
 
-class CrawlerLib:
+# all operation about crawler
+class CrawlerOperation:
     # init method or constructor   
     def __init__(self): 
         pass
@@ -35,6 +36,7 @@ class CrawlerLib:
 
         return data_list
 
+    # extract numerical values from movie item
     def numeric_value(self, movie, tag, class_=None, order=None):
         if order:
             if len(movie.findAll(tag, class_)) > 1:
@@ -46,12 +48,14 @@ class CrawlerLib:
 
         return to_extract
 
+    # extract nested values from movie item
     def nested_text_value(self, movie, tag_1, class_1, tag_2, class_2, order=None):
         if not order:
             return movie.find(tag_1, class_1).find(tag_2, class_2).text
         else:
             return [val.text for val in movie.find(tag_1, class_1).findAll(tag_2, class_2)[order]]
 
+    # extract text values from movie item
     def text_value(self, movie, tag, class_=None):
         if movie.find(tag, class_):
             return movie.find(tag, class_).text
@@ -75,6 +79,13 @@ class CrawlerLib:
             print(ex) 
         
         return soap
+
+
+# all operation about csv file
+class CsvOperation:
+    # init method or constructor   
+    def __init__(self): 
+        pass
 
     # extracting all the information we need an turning it into a clean pandas data frame
     # export data frame to csv format
@@ -100,6 +111,8 @@ class CrawlerLib:
         # export to csv format with header
         df.to_csv("D:\\ExportDocument\\datacamp130818.csv", header=True, index=False)
 
+
+
 # HTTP response status codes
 def response_message(status_code):
     switcher={
@@ -120,7 +133,7 @@ def response_message(status_code):
             401:'Unauthorized',
             402:'Payment Required',
             403:'Forbidden',
-            404:'Not Found',
+            404:'This page could not be found',
             408:'Request Timeout',
             414:'URI Too Long',
             429:'Too Many Requests',
