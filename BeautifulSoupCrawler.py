@@ -95,7 +95,7 @@ actors = libCrawler.extract_attribute(movies,
                                         slice(1, 5, None), 
                                         True)
 
-# export to csv with header
+# export to csv with header and something new
 libCrawler.export_csv(titles, 
                         release, 
                         audience_rating,
