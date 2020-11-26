@@ -3,7 +3,7 @@
 # pandas: The goto Python package for dataset manipulation  
 # requests: The package that allows us to connect the site of choice.
 import bs4
-import pandas
+import pandas as pd
 import requests
 
 class CrawlerLib:
@@ -23,10 +23,13 @@ class CrawlerLib:
         data_list = []
         for movie in movies:
             if text_attribute:
+                # Extracting Nested Values: director and actors
                 if nested:
                     data_list.append(self.nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
+                # Extracting text: titles and release year
                 else:
                     data_list.append(self.text_value(movie, tag_1, class_1))
+            # Extracting Numerical Values: imdb_rating        
             else:
                 data_list.append(self.numeric_value(movie, tag_1, class_1, order))
 
@@ -57,8 +60,21 @@ class CrawlerLib:
 
     # Connect to the webpage, extract the HTML behind it and convert it to a BeautifulSoup object
     def get_page_contents(self, url):
-        page = requests.get(url, headers={"Accept-Language": "en-US"})
-        return bs4.BeautifulSoup(page.text, "html.parser")
+        soap = None
+        try:
+            page = requests.get(url, headers={"Accept-Language": "en-US"})
+
+            if page.status_code == 200:
+                soap = bs4.BeautifulSoup(page.text, "html.parser")
+            else:
+                print(response_message(page.status_code))
+           
+        except requests.RequestException as requestEx:
+            print(requestEx) 
+        except Exception as ex:
+            print(ex) 
+        
+        return soap
 
     # extracting all the information we need an turning it into a clean pandas data frame
     # export data frame to csv format
@@ -79,7 +95,41 @@ class CrawlerLib:
                 'Actors': actors}
 
         # We use pandas to visualize the data       
-        df = pandas.DataFrame(df_dict)
+        df = pd.DataFrame(df_dict)
 
         # export to csv format with header
         df.to_csv("D:\\ExportDocument\\datacamp130818.csv", header=True, index=False)
+
+# HTTP response status codes
+def response_message(status_code):
+    switcher={
+            # Informational responses (100–199)
+            100:'Continue',
+            101:'Switching Protocol',
+            102:'Processing',
+            103:'Early Hints',
+            # Successful responses (200–299)
+            200:'OK',
+            201:'Created',
+            202:'Accepted',
+            203:'Non-Authoritative Information',
+            204:'No Content',
+            # Redirects (300–399)
+            # Client error responses (400–499)
+            400:'Bad Request',
+            401:'Unauthorized',
+            402:'Payment Required',
+            403:'Forbidden',
+            404:'Not Found',
+            408:'Request Timeout',
+            414:'URI Too Long',
+            429:'Too Many Requests',
+            # Server errors (500–599)
+            500:'Internal Server Error',
+            501:'Not Implemented',
+            502:'Bad Gateway',
+            503:'Service Unavailable',
+            504:'Gateway Timeout',
+            505:'HTTP Version Not Supported'
+        }
+    return switcher.get(status_code,"An request exception occurred")    
