@@ -1,15 +1,23 @@
-# import CrawlerLib class
+# import CrawlerOperation and CsvOperation class
 # defined in CrawlerLibrary.py
-from CrawlerLibrary import CrawlerLib
+from CrawlerLibrary import CrawlerOperation
+from CrawlerLibrary import CsvOperation
+
+import webbrowser
 
 
-# Object instantiation of CrawlerLib class  
-libCrawler = CrawlerLib()
+# Object instantiation of CrawlerOperation class  
+crawlerOperation = CrawlerOperation()
+# Object instantiation of CsvOperation class 
+csvOperation = CsvOperation()
 
 # Let’s connect to the IMDB top 100 movies webpage:
 url = 'https://www.imdb.com/search/title/?count=100&groups=top_1000&sort=user_rating%27'
 
-result = libCrawler.get_page_contents(url)
+# open url in current browser 
+webbrowser.open_new(url)
+
+result = crawlerOperation.get_page_contents(url)
 
 if result != None:
     # We can get a list of all distinct movies and their corresponding HTML by
@@ -17,41 +25,41 @@ if result != None:
                             class_='lister-item-content')
 
     # we can construct a list of all movie titles
-    titles = libCrawler.extract_attribute(movies,
+    titles = crawlerOperation.extract_attribute(movies,
                                             result,
                                             'a')
 
     # Release years can be found under the tag span and class lister-item-year text-muted unbold
     # found in <span class="lister-item-year text-muted unbold">(2020)</span>
-    release = libCrawler.extract_attribute(movies,
+    release = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'span', 
                                             'lister-item-year text-muted unbold')
 
     # Audience rating can be found under the tag span and class certificate
     # found in <span class="certificate">TV-MA</span>
-    audience_rating = libCrawler.extract_attribute(movies,
+    audience_rating = crawlerOperation.extract_attribute(movies,
                                                     result, 
                                                     'span', 
                                                     'certificate')
 
     # Runtime can be found under the tag span and class runtime
     # found in <span class="runtime">153 min</span>
-    runtime = libCrawler.extract_attribute(movies,
+    runtime = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'span', 
                                             'runtime')
 
     # Genre can be found under the tag span and class genre
     # found in <span class="genre">Drama</span>
-    genre = libCrawler.extract_attribute(movies,
+    genre = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'span', 
                                             'genre')
 
     # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
     # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
-    imdb_rating = libCrawler.extract_attribute(movies,
+    imdb_rating = crawlerOperation.extract_attribute(movies,
                                                 result, 
                                                 'div', 
                                                 'inline-block ratings-imdb-rating', 
@@ -59,7 +67,7 @@ if result != None:
 
     # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
     # found in <span name="nv" data-value="47467">47,467</span>
-    votes = libCrawler.extract_attribute(movies,
+    votes = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'span' , 
                                             {'name' : 'nv'}, 
@@ -68,7 +76,7 @@ if result != None:
 
     # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the second element
     # found in <span name="nv" data-value="53,800,000">$53.80M</span>
-    earnings = libCrawler.extract_attribute(movies,
+    earnings = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'span' , 
                                             {'name' : 'nv'}, 
@@ -76,7 +84,7 @@ if result != None:
                                             1)
 
     # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
-    directors = libCrawler.extract_attribute(movies,
+    directors = crawlerOperation.extract_attribute(movies,
                                                 result, 
                                                 'p', 
                                                 '', 
@@ -87,7 +95,7 @@ if result != None:
                                                 True)
 
     # actors always correspond to the remaining a tags
-    actors = libCrawler.extract_attribute(movies,
+    actors = crawlerOperation.extract_attribute(movies,
                                             result, 
                                             'p', 
                                             '', 
@@ -98,7 +106,7 @@ if result != None:
                                             True)
 
     # export to csv with header and something new
-    libCrawler.export_csv(titles, 
+    csvOperation.export_csv(titles, 
                             release, 
                             audience_rating,
                             runtime,
