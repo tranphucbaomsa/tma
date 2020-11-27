@@ -137,7 +137,7 @@ def response_message(status_code):
             401:'Unauthorized',
             402:'Payment Required',
             403:'Forbidden',
-            404:'This page could not be found',
+            404:'This page could not be found', # Not found
             408:'Request Timeout',
             414:'URI Too Long',
             429:'Too Many Requests',
