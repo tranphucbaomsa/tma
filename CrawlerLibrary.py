@@ -1,7 +1,9 @@
-# We can then import these at begin
-# bs4 (beautifulsoup4): Allows us to parse the HTML of the site and convert it to a BeautifulSoup object, which represents the HTML as a nested data structure.
-# pandas: The goto Python package for dataset manipulation  
-# requests: The package that allows us to connect the site of choice.
+"""
+We can then import these at begin
+bs4 (beautifulsoup4): Allows us to parse the HTML of the site and convert it to a BeautifulSoup object, which represents the HTML as a nested data structure.
+pandas: The goto Python package for dataset manipulation  
+requests: The package that allows us to connect the site of choice.
+"""
 import bs4
 import pandas as pd
 import requests
@@ -12,13 +14,15 @@ class CrawlerOperation:
     def __init__(self): 
         pass
 
-    # titles = [movie.find('a').text for movie in movies]
-    # release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
-    # imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
-    # votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
-    # earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
-    # director = movie.find('p').find('a').text
-    # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
+    """
+    titles = [movie.find('a').text for movie in movies]
+    release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
+    imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
+    votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
+    earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
+    director = movie.find('p').find('a').text
+    actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
+    """
     def extract_attribute(self, movies, soup, tag_1, class_1='', tag_2='', class_2='',
                     text_attribute=True, order=None, nested=False):        
         data_list = []
