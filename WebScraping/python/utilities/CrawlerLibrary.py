@@ -75,12 +75,11 @@ class CrawlerOperation:
             if page.status_code == 200:
                 soap = bs4.BeautifulSoup(page.text, "html.parser")
             else:
-                print(response_message(page.status_code))
+                page.raise_for_status()
+                # print(response_message(page.status_code))
            
-        except requests.RequestException as requestEx:
-            print(requestEx) 
         except Exception as ex:
-            print(ex) 
+            print('There was a problem: %s' % (ex)) 
         
         return soap
 
@@ -93,7 +92,7 @@ class CsvOperation:
 
     # extracting all the information we need an turning it into a clean pandas data frame
     # export data frame to csv format
-    def export_csv(self, titles, release, audience_rating, 
+    def export_csv(self, filename, titles, release, audience_rating, 
                     runtime, genre, imdb_rating, votes, 
                     earnings, directors, actors):
 
@@ -113,7 +112,7 @@ class CsvOperation:
         df = pd.DataFrame(df_dict)
 
         # export to csv format with header
-        df.to_csv("D:\\ExportDocument\\datacamp130818.csv", header=True, index=False)
+        df.to_csv("D:\\ExportDocument\\" + filename + ".csv", header=True, index=False)
 
 
 
