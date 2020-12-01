@@ -11,23 +11,39 @@ crawlerOperation = CrawlerOperation()
 csvOperation = CsvOperation()
 
 start_array = [1, 251, 501, 751]
-# w.register('firefox',
-#             None,
-#             w.BackgroundBrowser("C://Program Files//Mozilla Firefox//firefox.exe"))
-# firefox = w.get('firefox')
+w.register('chrome',
+            None,
+            w.BackgroundBrowser("C://Program Files (x86)//Google//Chrome//Application//chrome.exe"))
+chrome = w.get('chrome')
+
+url = 'https://www.imdb.com'
+next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
+next_href = []
+next_href.append('/search/title/?count=250&groups=top_1000&sort=user_rating%27')
+
+while crawlerOperation.get_page_contents(url + next_link):
+    result = crawlerOperation.get_page_contents(url + next_link)
+    class_next_page = result.find('a', {'class': 'lister-page-next next-page'})
+
+    if class_next_page != None:
+        next_link = class_next_page.get('href')
+        if next_link != None:
+            next_href.append(next_link)
+    else:
+        break
 
 # Let’s connect to the IMDB every 250 movies webpage (for 1000 movies):
-for start_item in start_array:
-    url = 'https://www.imdb.com/search/title/?count=250&groups=top_1000&sort=user_rating%27&start=' + str(start_item)
+for item_href in next_href:
+    index = next_href.index(item_href)
 
     # open url in current browser
-    print('Open page %s...' % url)
-    w.open(url, new=0, autoraise=True)
+    print('Open page %s...' % url + item_href)
+    chrome.open(url + item_href, new=0, autoraise=True)
 
-    result = crawlerOperation.get_page_contents(url)
+    result = crawlerOperation.get_page_contents(url + item_href)
 
     if result != None:
-        print('Get titles, release, rating, votes,... from current page')
+        print('Get titles, release, rating, votes,... from imdb webpage')
 
         # We can get a list of all distinct movies and their corresponding HTML by
         movies = result.findAll('div',
@@ -115,8 +131,8 @@ for start_item in start_array:
                                                 True)
 
         # export to csv with header and something new
-        print('Export to imdb_%s csv file' % str(start_item))
-        csvOperation.export_csv("imdb_" + str(start_item),
+        print('Export to imdb_%s csv file' % str(index + 1))
+        csvOperation.export_csv("imdb_" + str(index + 1),
                                 titles,
                                 release,
                                 audience_rating,
