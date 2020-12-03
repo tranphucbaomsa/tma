@@ -18,36 +18,38 @@ def scraping_without_selenium(csv_path):
     url = 'https://www.imdb.com'
     # tmp_code:  next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
     next_link = '/search/title/?groups=top_1000&count=250&start=1&ref_=adv_nxt'
-    page_content = []
+    next_href = []
+    next_href.append('/search/title/?count=250&groups=top_1000&sort=user_rating%27')
 
     # Let’s connect to the first page of IMDB website (for 1000 movies)
     result = crawlerOperation.get_page_contents(url + next_link)
-    page_content.append(result)
 
-    # Let’s connect to the next page of IMDB website and open in chrome browser
+    # Let’s connect to the next page of IMDB website and get next link if exist
     # Break to the loop even if the next href is gone:
     while result != None:
-        print('Open page %s...' % url + next_link)
-        # open url in chrome browser
-        chrome.open(url + next_link, 
-                    new=0, 
-                    autoraise=True)
-
         class_next_page = result.find('a', {'class': 'lister-page-next next-page'})
 
         if class_next_page != None:
             next_link = class_next_page.get('href')
             result = crawlerOperation.get_page_contents(url + next_link)
-            page_content.append(result)
-            time.sleep(1)
+            next_href.append(next_link)
         else:
             break
 
-    # Get each item in a page_content list:
-    for item_page_content in page_content:
-        index = page_content.index(item_page_content)
+    # Get each item in a next_href list:
+    for item_next_href in next_href:
+        index = next_href.index(item_next_href)
 
-        if item_page_content != None:
+        print('Open page %s...' % url + item_next_href)
+        # open current link in chrome browser
+        chrome.open(url + item_next_href, 
+                    new=0, 
+                    autoraise=True)
+        time.sleep(1)
+
+        result = crawlerOperation.get_page_contents(url + item_next_href)            
+
+        if result != None:
             print('Get titles, release, rating, votes,... from imdb website')
 
             # We can get a list of all distinct movies and their corresponding HTML by
@@ -56,41 +58,41 @@ def scraping_without_selenium(csv_path):
 
             # we can construct a list of all movie titles
             titles = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'a')
 
             # Release years can be found under the tag span and class lister-item-year text-muted unbold
             # found in <span class="lister-item-year text-muted unbold">(2020)</span>
             release = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'span',
                                                     'lister-item-year text-muted unbold')
 
             # Audience rating can be found under the tag span and class certificate
             # found in <span class="certificate">TV-MA</span>
             audience_rating = crawlerOperation.extract_attribute(movies,
-                                                            item_page_content,
+                                                            result,
                                                             'span',
                                                             'certificate')
 
             # Runtime can be found under the tag span and class runtime
             # found in <span class="runtime">153 min</span>
             runtime = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'span',
                                                     'runtime')
 
             # Genre can be found under the tag span and class genre
             # found in <span class="genre">Drama</span>
             genre = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'span',
                                                     'genre')
 
             # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
             # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
             imdb_rating = crawlerOperation.extract_attribute(movies,
-                                                        item_page_content,
+                                                        result,
                                                         'div',
                                                         'inline-block ratings-imdb-rating',
                                                         False)
@@ -98,7 +100,7 @@ def scraping_without_selenium(csv_path):
             # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
             # found in <span name="nv" data-value="47467">47,467</span>
             votes = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'span' ,
                                                     {'name' : 'nv'},
                                                     False,
@@ -107,7 +109,7 @@ def scraping_without_selenium(csv_path):
             # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the second element
             # found in <span name="nv" data-value="53,800,000">$53.80M</span>
             earnings = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'span' ,
                                                     {'name' : 'nv'},
                                                     False,
@@ -115,7 +117,7 @@ def scraping_without_selenium(csv_path):
 
             # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
             directors = crawlerOperation.extract_attribute(movies,
-                                                        item_page_content,
+                                                        result,
                                                         'p',
                                                         '',
                                                         'a',
@@ -126,7 +128,7 @@ def scraping_without_selenium(csv_path):
 
             # actors always correspond to the remaining a tags
             actors = crawlerOperation.extract_attribute(movies,
-                                                    item_page_content,
+                                                    result,
                                                     'p',
                                                     '',
                                                     'a',
