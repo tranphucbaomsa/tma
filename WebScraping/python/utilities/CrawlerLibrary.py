@@ -10,38 +10,53 @@ import requests
 
 # all operation about crawler
 class CrawlerOperation:
-    # init method or constructor   
-    def __init__(self): 
+    def __init__(self):  # init method or constructor   
         pass
 
     """
-    titles = [movie.find('a').text for movie in movies]
-    release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
-    imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
-    votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
-    earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
-    director = movie.find('p').find('a').text
-    actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
+    -----// begin public member function: easily accessible from any part of the program //-----
     """
+    # titles = [movie.find('a').text for movie in movies]
+    # release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
+    # imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
+    # votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
+    # earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
+    # director = movie.find('p').find('a').text
+    # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
     def extract_attribute(self, movies, soup, tag_1, class_1='', tag_2='', class_2='',
                     text_attribute=True, order=None, nested=False):        
         data_list = []
         for movie in movies:
             if text_attribute:
-                # Extracting Nested Values: director and actors
-                if nested:
-                    data_list.append(self.nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
-                # Extracting text: titles and release year
-                else:
-                    data_list.append(self.text_value(movie, tag_1, class_1))
-            # Extracting Numerical Values: imdb_rating        
-            else:
-                data_list.append(self.numeric_value(movie, tag_1, class_1, order))
-
+                if nested:  # Extracting Nested Values: director and actors
+                    data_list.append(self.__nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
+                else:  # Extracting text: titles and release year
+                    data_list.append(self.__text_value(movie, tag_1, class_1))
+            else:  # Extracting Numerical Values: imdb_rating  
+                data_list.append(self.__numeric_value(movie, tag_1, class_1, order))
         return data_list
 
-    # extract numerical values from movie item
-    def numeric_value(self, movie, tag, class_=None, order=None):
+    # Connect to the webpage, extract the HTML behind it and convert it to a BeautifulSoup object
+    def get_page_contents(self, url):
+        soap = None
+        try:
+            page = requests.get(url, headers={"Accept-Language": "en-US"})
+            if page.status_code == 200:
+                soap = bs4.BeautifulSoup(page.text, "html.parser")
+            else:
+                page.raise_for_status()
+                # tmp_code: print(response_message(page.status_code))
+        except Exception as ex:
+            print('There was a problem: %s' % (ex)) 
+        return soap
+    """
+    -----// end public member function: easily accessible from any part of the program //-----
+    """
+
+    """
+    -----// begin private member function: can access within the class only //-----
+    """
+    def __numeric_value(self, movie, tag, class_=None, order=None): # extract numerical values from movie item
         if order:
             if len(movie.findAll(tag, class_)) > 1:
                 to_extract = movie.findAll(tag, class_)[order]['data-value']
@@ -49,52 +64,47 @@ class CrawlerOperation:
                 to_extract = None
         else:
             to_extract = movie.find(tag, class_)['data-value']
-
         return to_extract
 
-    # extract nested values from movie item
-    def nested_text_value(self, movie, tag_1, class_1, tag_2, class_2, order=None):
+    def __nested_text_value(self, movie, tag_1, class_1, tag_2, class_2, order=None):  # extract nested values from movie item
         if not order:
             return movie.find(tag_1, class_1).find(tag_2, class_2).text
         else:
             return [val.text for val in movie.find(tag_1, class_1).findAll(tag_2, class_2)[order]]
 
-    # extract text values from movie item
-    def text_value(self, movie, tag, class_=None):
+    def __text_value(self, movie, tag, class_=None):   # extract text values from movie item
         if movie.find(tag, class_):
             return movie.find(tag, class_).text
         else:
             return
-
-    # Connect to the webpage, extract the HTML behind it and convert it to a BeautifulSoup object
-    def get_page_contents(self, url):
-        soap = None
-        try:
-            page = requests.get(url, headers={"Accept-Language": "en-US"})
-
-            if page.status_code == 200:
-                soap = bs4.BeautifulSoup(page.text, "html.parser")
-            else:
-                page.raise_for_status()
-                # print(response_message(page.status_code))
-           
-        except Exception as ex:
-            print('There was a problem: %s' % (ex)) 
-        
-        return soap
+    """
+    -----// end private member function: can access within the class only //-----
+    """
 
 
 # all operation about csv file
 class CsvOperation:
-    # init method or constructor   
-    def __init__(self): 
+    def __init__(self):   # init method or constructor 
         pass
 
+    """
+    -----// end public member function: easily accessible from any part of the program //-----
+    """
     # extracting all the information we need an turning it into a clean pandas data frame
     # export data frame to csv format
-    def export_csv(self, filename, titles, release, audience_rating, 
-                    runtime, genre, imdb_rating, votes, 
-                    earnings, directors, actors):
+    def export_csv(self, 
+                    filename, 
+                    titles, 
+                    release, 
+                    audience_rating, 
+                    runtime, 
+                    genre, 
+                    imdb_rating, 
+                    votes, 
+                    earnings, 
+                    directors, 
+                    actors,
+                    csv_path):
 
         # init dictionary
         df_dict = {'Title': titles, 
@@ -108,12 +118,15 @@ class CsvOperation:
                 'Director': directors,
                 'Actors': actors}
 
-        # We use pandas to visualize the data       
-        df = pd.DataFrame(df_dict)
+        df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
 
         # export to csv format with header
-        df.to_csv("D:\\ExportDocument\\" + filename + ".csv", header=True, index=False)
-
+        df.to_csv(csv_path + "\\" + filename + ".csv", 
+                    header=True, 
+                    index=False)  
+    """
+    -----// end public member function: easily accessible from any part of the program //-----
+    """
 
 
 # HTTP response status codes

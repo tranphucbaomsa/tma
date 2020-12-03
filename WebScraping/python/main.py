@@ -4,25 +4,20 @@ from utilities.CrawlerLibrary import CrawlerOperation
 from utilities.CrawlerLibrary import CsvOperation
 
 import webbrowser as w
-import sys
-from subprocess import Popen
 import time
 
-def scraping_without_selenium():
-    # Some code
-    # Object instantiation of CrawlerOperation class
-    crawlerOperation = CrawlerOperation()
-    # Object instantiation of CsvOperation class
-    csvOperation = CsvOperation()
+def scraping_without_selenium(csv_path):
+    crawlerOperation = CrawlerOperation()  # Object instantiation of CrawlerOperation class
+    csvOperation = CsvOperation()  # Object instantiation of CsvOperation class
 
-    start_array = [1, 251, 501, 751]
     w.register('chrome',
                 None,
                 w.BackgroundBrowser("C://Program Files (x86)//Google//Chrome//Application//chrome.exe"))
     chrome = w.get('chrome')
 
     url = 'https://www.imdb.com'
-    next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
+    # tmp_code:  next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
+    next_link = '/search/title/?groups=top_1000&count=250&start=1&ref_=adv_nxt'
     page_content = []
 
     # Let’s connect to the first page of IMDB website (for 1000 movies)
@@ -33,27 +28,27 @@ def scraping_without_selenium():
     # Break to the loop even if the next href is gone:
     while result != None:
         print('Open page %s...' % url + next_link)
-        chrome.open(url + next_link, new=0, autoraise=True)
+        # open url in chrome browser
+        chrome.open(url + next_link, 
+                    new=0, 
+                    autoraise=True)
 
         class_next_page = result.find('a', {'class': 'lister-page-next next-page'})
 
         if class_next_page != None:
             next_link = class_next_page.get('href')
-            if next_link != None:
-                page_content.append(result)
-                result = crawlerOperation.get_page_contents(url + next_link)
+            result = crawlerOperation.get_page_contents(url + next_link)
+            page_content.append(result)
+            time.sleep(1)
         else:
             break
 
-    # Get each item in a href list:
+    # Get each item in a page_content list:
     for item_page_content in page_content:
         index = page_content.index(item_page_content)
 
-        # open url in current browser
-        result = item_page_content
-
-        if result != None:
-            print('Get titles, release, rating, votes,... from imdb webpage')
+        if item_page_content != None:
+            print('Get titles, release, rating, votes,... from imdb website')
 
             # We can get a list of all distinct movies and their corresponding HTML by
             movies = result.findAll('div',
@@ -61,41 +56,41 @@ def scraping_without_selenium():
 
             # we can construct a list of all movie titles
             titles = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'a')
 
             # Release years can be found under the tag span and class lister-item-year text-muted unbold
             # found in <span class="lister-item-year text-muted unbold">(2020)</span>
             release = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'span',
                                                     'lister-item-year text-muted unbold')
 
             # Audience rating can be found under the tag span and class certificate
             # found in <span class="certificate">TV-MA</span>
             audience_rating = crawlerOperation.extract_attribute(movies,
-                                                            result,
+                                                            item_page_content,
                                                             'span',
                                                             'certificate')
 
             # Runtime can be found under the tag span and class runtime
             # found in <span class="runtime">153 min</span>
             runtime = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'span',
                                                     'runtime')
 
             # Genre can be found under the tag span and class genre
             # found in <span class="genre">Drama</span>
             genre = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'span',
                                                     'genre')
 
             # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
             # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
             imdb_rating = crawlerOperation.extract_attribute(movies,
-                                                        result,
+                                                        item_page_content,
                                                         'div',
                                                         'inline-block ratings-imdb-rating',
                                                         False)
@@ -103,7 +98,7 @@ def scraping_without_selenium():
             # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
             # found in <span name="nv" data-value="47467">47,467</span>
             votes = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'span' ,
                                                     {'name' : 'nv'},
                                                     False,
@@ -112,7 +107,7 @@ def scraping_without_selenium():
             # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the second element
             # found in <span name="nv" data-value="53,800,000">$53.80M</span>
             earnings = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'span' ,
                                                     {'name' : 'nv'},
                                                     False,
@@ -120,7 +115,7 @@ def scraping_without_selenium():
 
             # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
             directors = crawlerOperation.extract_attribute(movies,
-                                                        result,
+                                                        item_page_content,
                                                         'p',
                                                         '',
                                                         'a',
@@ -131,7 +126,7 @@ def scraping_without_selenium():
 
             # actors always correspond to the remaining a tags
             actors = crawlerOperation.extract_attribute(movies,
-                                                    result,
+                                                    item_page_content,
                                                     'p',
                                                     '',
                                                     'a',
@@ -152,11 +147,13 @@ def scraping_without_selenium():
                                     votes,
                                     earnings,
                                     directors,
-                                    actors)
+                                    actors,
+                                    csv_path)
+            
 
 def scraping_with_selenium():
     # More code
-    print('Scraping With Selenium.')
+    print('Coming Soon.')
     None
 
 def let_user_pick(options):
@@ -171,41 +168,36 @@ def let_user_pick(options):
         pass
     return None
 
-def browser_open_close():
-    chrome_browser = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-    url = "http://www.google.com"
-    process_open = Popen([chrome_browser, url])
-   
-    # browser now points to the instance of firefox I just opened
-    time.sleep(60)
-    process_open.terminate()
-
-    # browser = Popen(['firefox', 'http://example.com'])
-    # # browser now points to the instance of firefox I just opened
-    # time.sleep(60)
-    # browser.terminate()
-    return process_open
-
-def browser_close(process_opened):
-    process_opened.terminate()
+def let_user_input_path():
+    path = input("Please enter path will contain csv file:   ")
+    try:
+        if path:
+            return path
+    except:
+        pass
+    return None
 
 def main():
-    # print('-------WebScraping Begin.---------')
-    # print('\n')
+    print('-------WebScraping Begin.---------')
+    print('\n')
 
-    # options = ["Scraping Without Selenium.", "Scraping With Selenium."]
-    # choice = let_user_pick(options) # returns integer
+    csv_path = let_user_input_path() # returns string (Ex: D:\ExportDocument)
 
-    # if choice == 1:
-    #     scraping_without_selenium()
-    # elif choice == 2:
-    #     scraping_with_selenium()
-    # else:
-    #     print('You choose nothing')
+    if csv_path != None:
+        options = ["Scraping Without Selenium.", "Scraping With Selenium."]
+        choice = let_user_pick(options) # returns integer
 
-    # print('\n')
-    # print('-------WebScraping Finish.---------')
-    browser_open_close()
+        if choice == 1:
+            scraping_without_selenium(csv_path)
+        elif choice == 2:
+            scraping_with_selenium()
+        else:
+            print('You choose nothing')
+    else:
+         print('You dont enter yet')
+
+    print('\n')
+    print('-------WebScraping Finish.---------')
 
 if __name__ == "__main__":
     main()
