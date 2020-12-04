@@ -7,6 +7,8 @@ requests: The package that allows us to connect the site of choice.
 import bs4
 import pandas as pd
 import requests
+from utilities import constant
+from utilities.app_enum import EnumStatusCode
 
 # all operation about crawler
 class CrawlerOperation:
@@ -41,11 +43,11 @@ class CrawlerOperation:
         soap = None
         try:
             page = requests.get(url, headers={"Accept-Language": "en-US"})
-            if page.status_code == 200:
+            if page.status_code == constant.STATUS_OK:
                 soap = bs4.BeautifulSoup(page.text, "html.parser")
             else:
-                page.raise_for_status()
-                # tmp_code: print(response_message(page.status_code))
+                # tmp_code: page.raise_for_status()
+                print(response_message(page.status_code))
         except Exception as ex:
             print('There was a problem: %s' % (ex)) 
         return soap
@@ -129,36 +131,19 @@ class CsvOperation:
     """
 
 
-# HTTP response status codes
+# get error message from status code
 def response_message(status_code):
-    switcher={
-            # Informational responses (100–199)
-            100:'Continue',
-            101:'Switching Protocol',
-            102:'Processing',
-            103:'Early Hints',
-            # Successful responses (200–299)
-            200:'OK',
-            201:'Created',
-            202:'Accepted',
-            203:'Non-Authoritative Information',
-            204:'No Content',
-            # Redirects (300–399)
-            # Client error responses (400–499)
-            400:'Bad Request',
-            401:'Unauthorized',
-            402:'Payment Required',
-            403:'Forbidden',
-            404:'This page could not be found', # Not found
-            408:'Request Timeout',
-            414:'URI Too Long',
-            429:'Too Many Requests',
-            # Server errors (500–599)
-            500:'Internal Server Error',
-            501:'Not Implemented',
-            502:'Bad Gateway',
-            503:'Service Unavailable',
-            504:'Gateway Timeout',
-            505:'HTTP Version Not Supported'
-        }
-    return switcher.get(status_code,"An request exception occurred")    
+    http_error_msg = u'%s Other Error: ' % status_code
+
+    if 100 <= status_code < 200:
+        http_error_msg = u'%s Informational Error: ' % status_code
+    elif 200 <= status_code < 299:
+        http_error_msg = u'%s Successful Error: ' % status_code
+    elif 400 <= status_code < 500:
+        http_error_msg = u'%s Client Error: ' % status_code
+    elif 500 <= status_code < 600:
+        http_error_msg = u'%s Server Error: ' % status_code
+
+    http_error_msg += u'%s' % EnumStatusCode(status_code).name
+        
+    return http_error_msg   

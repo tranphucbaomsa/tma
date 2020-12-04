@@ -9,17 +9,17 @@ import time
 def scraping_without_selenium(csv_path):
     crawlerOperation = CrawlerOperation()  # Object instantiation of CrawlerOperation class
     csvOperation = CsvOperation()  # Object instantiation of CsvOperation class
+    url = 'https://www.imdb.com'
+    next_href = []
 
     w.register('chrome',
                 None,
                 w.BackgroundBrowser("C://Program Files (x86)//Google//Chrome//Application//chrome.exe"))
     chrome = w.get('chrome')
 
-    url = 'https://www.imdb.com'
     # tmp_code:  next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
     next_link = '/search/title/?groups=top_1000&count=250&start=1&ref_=adv_nxt'
-    next_href = []
-    next_href.append('/search/title/?count=250&groups=top_1000&sort=user_rating%27')
+    next_href.append(next_link)
 
     # Let’s connect to the first page of IMDB website (for 1000 movies)
     result = crawlerOperation.get_page_contents(url + next_link)
@@ -36,20 +36,19 @@ def scraping_without_selenium(csv_path):
         else:
             break
 
-    # Get each item in a next_href list:
-    for item_next_href in next_href:
-        index = next_href.index(item_next_href)
+    if result != None:
+        for item_next_href in next_href:   # Get each item in a next_href list:
+            index = next_href.index(item_next_href)
 
-        print('Open page %s...' % url + item_next_href)
-        # open current link in chrome browser
-        chrome.open(url + item_next_href, 
-                    new=0, 
-                    autoraise=True)
-        time.sleep(1)
+            result = crawlerOperation.get_page_contents(url + item_next_href)
 
-        result = crawlerOperation.get_page_contents(url + item_next_href)            
-
-        if result != None:
+            print('Open page %s...' % url + item_next_href)
+            # open current link in chrome browser
+            chrome.open(url + item_next_href, 
+                        new=0, 
+                        autoraise=True)
+            time.sleep(1)
+        
             print('Get titles, release, rating, votes,... from imdb website')
 
             # We can get a list of all distinct movies and their corresponding HTML by
