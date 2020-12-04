@@ -40,17 +40,17 @@ def scraping_without_selenium(csv_path):
         for item_next_href in next_href:   # Get each item in a next_href list:
             index = next_href.index(item_next_href)
 
+            print('\n')
+            print('1. Request-Response from %s' % url + item_next_href)
             result = crawlerOperation.get_page_contents(url + item_next_href)
-
-            print('Open page %s...' % url + item_next_href)
+            
             # open current link in chrome browser
             chrome.open(url + item_next_href, 
                         new=0, 
                         autoraise=True)
             time.sleep(1)
         
-            print('Get titles, release, rating, votes,... from imdb website')
-
+            print('2. Parse and Extract title, release, rating, votes,... from imdb website')
             # We can get a list of all distinct movies and their corresponding HTML by
             movies = result.findAll('div',
                                     class_='lister-item-content')
@@ -137,7 +137,7 @@ def scraping_without_selenium(csv_path):
                                                     True)
 
             # export to csv with header and something new
-            print('Export to imdb_%s csv file' % str(index + 1))
+            print('3. Download data and export title, release, rating, votes,... to %s\imdb_%s.csv file' % (csv_path, str(index + 1)))
             csvOperation.export_csv("imdb_" + str(index + 1),
                                     titles,
                                     release,
@@ -157,7 +157,10 @@ def scraping_with_selenium():
     print('Coming Soon.')
     None
 
-def let_user_pick(options):
+"""
+-----// begin private member function: can access within the class only //-----
+"""
+def __let_user_pick(options):
     print("Please choose:")
     for idx, element in enumerate(options):
         print("{}) {}".format(idx+1,element))
@@ -169,8 +172,8 @@ def let_user_pick(options):
         pass
     return None
 
-def let_user_input_path():
-    path = input("Please enter path will contain csv file:   ")
+def __let_user_input_path():
+    path = input("Please enter path will contain csv file (Ex: D:\ExportDocument):   ")
     try:
         if path:
             return path
@@ -178,15 +181,15 @@ def let_user_input_path():
         pass
     return None
 
-def main():
-    print('-------WebScraping Begin.---------')
+def __main():
+    print('-------WebScraping process start.---------')
     print('\n')
 
-    csv_path = let_user_input_path() # returns string (Ex: D:\ExportDocument)
+    csv_path = __let_user_input_path() # returns string (Ex: D:\ExportDocument)
 
     if csv_path != None:
         options = ["Scraping Without Selenium.", "Scraping With Selenium."]
-        choice = let_user_pick(options) # returns integer
+        choice = __let_user_pick(options) # returns integer
 
         if choice == 1:
             scraping_without_selenium(csv_path)
@@ -198,8 +201,11 @@ def main():
          print('You dont enter yet')
 
     print('\n')
-    print('-------WebScraping Finish.---------')
+    print('-------WebScraping process finish.---------')
+"""
+-----// end private member function: can access within the class only //-----
+"""
 
 if __name__ == "__main__":
-    main()
+    __main()
 
