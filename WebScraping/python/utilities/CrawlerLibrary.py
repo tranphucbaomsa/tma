@@ -12,8 +12,21 @@ from utilities.app_enum import EnumStatusCode
 
 # all operation about crawler
 class CrawlerOperation:
+    __instance = None
+
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if CrawlerOperation.__instance == None:
+         CrawlerOperation()
+      return CrawlerOperation.__instance
+
     def __init__(self):  # init method or constructor   
-        pass
+        # Virtually private constructor.
+        if CrawlerOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            CrawlerOperation.__instance = self
 
     """
     -----// begin public member function: easily accessible from any part of the program //-----
@@ -25,8 +38,16 @@ class CrawlerOperation:
     # earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
     # director = movie.find('p').find('a').text
     # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
-    def extract_attribute(self, movies, soup, tag_1, class_1='', tag_2='', class_2='',
-                    text_attribute=True, order=None, nested=False):        
+    def extract_attribute(self, 
+                            movies, 
+                            soup, 
+                            tag_1, 
+                            class_1='', 
+                            tag_2='', 
+                            class_2='',
+                            text_attribute=True, 
+                            order=None, 
+                            nested=False):        
         data_list = []
         for movie in movies:
             if text_attribute:
@@ -44,7 +65,8 @@ class CrawlerOperation:
         try:
             page = requests.get(url, headers={"Accept-Language": "en-US"})
             if page.status_code == constant.STATUS_OK:
-                soap = bs4.BeautifulSoup(page.text, "html.parser")
+                soap = bs4.BeautifulSoup(page.text, 
+                                            "html.parser")
             else:
                 # tmp_code: page.raise_for_status()
                 print(response_message(page.status_code))
@@ -58,7 +80,12 @@ class CrawlerOperation:
     """
     -----// begin private member function: can access within the class only //-----
     """
-    def __numeric_value(self, movie, tag, class_=None, order=None): # extract numerical values from movie item
+    # extract numerical values from movie item
+    def __numeric_value(self, 
+                        movie, 
+                        tag, 
+                        class_=None, 
+                        order=None): 
         if order:
             if len(movie.findAll(tag, class_)) > 1:
                 to_extract = movie.findAll(tag, class_)[order]['data-value']
@@ -68,13 +95,24 @@ class CrawlerOperation:
             to_extract = movie.find(tag, class_)['data-value']
         return to_extract
 
-    def __nested_text_value(self, movie, tag_1, class_1, tag_2, class_2, order=None):  # extract nested values from movie item
+    # extract nested values from movie item
+    def __nested_text_value(self, 
+                            movie, 
+                            tag_1, 
+                            class_1, 
+                            tag_2, 
+                            class_2, 
+                            order=None):  
         if not order:
             return movie.find(tag_1, class_1).find(tag_2, class_2).text
         else:
             return [val.text for val in movie.find(tag_1, class_1).findAll(tag_2, class_2)[order]]
 
-    def __text_value(self, movie, tag, class_=None):   # extract text values from movie item
+    # extract text values from movie item
+    def __text_value(self, 
+                    movie, 
+                    tag, 
+                    class_=None):   
         if movie.find(tag, class_):
             return movie.find(tag, class_).text
         else:
@@ -86,8 +124,21 @@ class CrawlerOperation:
 
 # all operation about csv file
 class CsvOperation:
-    def __init__(self):   # init method or constructor 
-        pass
+    __instance = None
+
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if CsvOperation.__instance == None:
+         CsvOperation()
+      return CsvOperation.__instance
+
+    def __init__(self):  # init method or constructor   
+        # Virtually private constructor.
+        if CsvOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            CsvOperation.__instance = self
 
     """
     -----// end public member function: easily accessible from any part of the program //-----
@@ -96,29 +147,8 @@ class CsvOperation:
     # export data frame to csv format
     def export_csv(self, 
                     filename, 
-                    titles, 
-                    release, 
-                    audience_rating, 
-                    runtime, 
-                    genre, 
-                    imdb_rating, 
-                    votes, 
-                    earnings, 
-                    directors, 
-                    actors,
+                    df_dict,
                     csv_path):
-
-        # init dictionary
-        df_dict = {'Title': titles, 
-                'Relase': release, 
-                'Audience Rating': audience_rating,
-                'Runtime': runtime, 
-                'Genre': genre, 
-                'IMDB Rating': imdb_rating,
-                'Votes': votes, 
-                'Box Office Earnings': earnings, 
-                'Director': directors,
-                'Actors': actors}
 
         df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
 

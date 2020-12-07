@@ -3,18 +3,22 @@
 from utilities.CrawlerLibrary import CrawlerOperation
 from utilities.CrawlerLibrary import CsvOperation
 
+# import the necessary packages
 import webbrowser as w
 import time
+from selenium import webdriver
+import pandas as pd
+from selenium.common.exceptions import NoSuchElementException
 
 def scraping_without_selenium(csv_path):
-    crawlerOperation = CrawlerOperation()  # Object instantiation of CrawlerOperation class
-    csvOperation = CsvOperation()  # Object instantiation of CsvOperation class
+    crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
+    csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
     url = 'https://www.imdb.com'
     next_href = []
 
     w.register('chrome',
                 None,
-                w.BackgroundBrowser("C://Program Files (x86)//Google//Chrome//Application//chrome.exe"))
+                w.BackgroundBrowser(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"))
     chrome = w.get('chrome')
 
     # tmp_code:  next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
@@ -136,26 +140,73 @@ def scraping_without_selenium(csv_path):
                                                     slice(1, 5, None),
                                                     True)
 
+            # init dictionary
+            df_dict_imdb = {'Title': titles, 
+                        'Relase': release, 
+                        'Audience Rating': audience_rating,
+                        'Runtime': runtime, 
+                        'Genre': genre, 
+                        'IMDB Rating': imdb_rating,
+                        'Votes': votes, 
+                        'Box Office Earnings': earnings, 
+                        'Director': directors,
+                        'Actors': actors}
+
             # export to csv with header and something new
             print('3. Download data and export title, release, rating, votes,... to %s\imdb_%s.csv file' % (csv_path, str(index + 1)))
             csvOperation.export_csv("imdb_" + str(index + 1),
-                                    titles,
-                                    release,
-                                    audience_rating,
-                                    runtime,
-                                    genre,
-                                    imdb_rating,
-                                    votes,
-                                    earnings,
-                                    directors,
-                                    actors,
+                                    df_dict_imdb,
                                     csv_path)
             
 
-def scraping_with_selenium():
-    # More code
-    print('Coming Soon.')
-    None
+def scraping_with_selenium(csv_path):
+    csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
+
+    url = 'https://www.imdb.com'
+    next_href = url + '/search/title/?groups=top_1000&count=250&start=1&ref_=adv_nxt'
+
+    # Define Chrome options to open the window in maximized mode
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")
+
+    chrome_browser = webdriver.Chrome(executable_path=r'C:\apps\chromedriver.exe', chrome_options=options)
+    # open current link in chrome browser
+    chrome_browser.get(next_href)
+    isNext = True
+
+    while isNext:
+        try:
+            titles = chrome_browser.find_elements_by_css_selector('.lister-item-header a')
+            print('Title: %s' % titles[0].text)
+
+            nextLinkElem = chrome_browser.find_element_by_class_name('next-page')
+            time.sleep(1)
+            nextLinkElem.click()
+        except NoSuchElementException:
+            isNext = False
+            break  
+
+    # chrome_browser.maximize_window()
+    # chrome_browser.implicitly_wait(120)
+
+    # index = 0
+
+    # while nextLinkElem != None:
+    #     print('\n')
+    #     print('1. Request-Response from %s' % next_href)
+        
+    #     print('2. Parse and Extract title, release, rating, votes,... from imdb website')
+
+    #     print('3. Download data and export title, release, rating, votes,... to %s\imdb_%s.csv file' % (csv_path, str(index + 1)))
+        
+    #     nextLinkElem.click()
+
+        # next_href = nextLinkElem.get_attribute('href')
+        # chrome_browser.get(next_href)
+        # nextLinkElem = chrome_browser.find_element_by_class_name('next-page')
+        # index += 1
+        
+    chrome_browser.close()
 
 """
 -----// begin private member function: can access within the class only //-----
@@ -194,7 +245,7 @@ def __main():
         if choice == 1:
             scraping_without_selenium(csv_path)
         elif choice == 2:
-            scraping_with_selenium()
+            scraping_with_selenium(csv_path)
         else:
             print('You choose nothing')
     else:
