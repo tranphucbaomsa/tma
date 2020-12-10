@@ -41,3 +41,8 @@ class EnumStatusCode(Enum):
         return EnumStatusCode.AN_REQUEST_EXCEPTION_OCCURRED
 
 
+# creating enumerations using class 
+# HTTP response status codes
+class EnumMainOptions(Enum):
+    SCRAPING_WITHOUT_SELENIUM = 1
+    SCRAPING_WITH_SELENIUM = 2
