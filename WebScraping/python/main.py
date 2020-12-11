@@ -9,126 +9,18 @@ import webbrowser as w
 import time
 import pandas as pd
 import re  # Regular expression operations
-from tabulate import tabulate
 from bs4 import BeautifulSoup
 import os
+from os import path
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
-from selenium.webdriver.common.by import By
-
-class MyListener(AbstractEventListener):
-    def before_navigate_to(self, url, driver):
-        print("Before navigating to ", url)
-
-    def after_navigate_to(self, url, driver):
-        # titles = driver.find_elements_by_css_selector('.lister-item-header a')
-        # release = 
-        # audience_rating = 
-        # runtime = 
-        # genre = 
-        # imdb_rating = 
-        # votes = 
-        # earnings = 
-        # directors = 
-        # actors = 
-        print("After navigating to ", url)
-
-    def before_navigate_back(self, driver):
-        try:
-            divTitleWrapper = driver.find_element_by_css_selector('div.title_wrapper')
-            title_item = divTitleWrapper.find_element_by_tag_name('h1').text
-            release_item = divTitleWrapper.find_element_by_css_selector('#titleYear').text
-
-            divSubtext = divTitleWrapper.find_element_by_css_selector('div.subtext')
-            arrSubtext = divSubtext.text.split(" | ")
-            audience_rating_item = arrSubtext[0]
-            runtime_item = arrSubtext[1]
-            genre_item = arrSubtext[2]
-
-            divImdbRating = driver.find_element_by_css_selector('div.imdbRating')
-            divRatingValue = divImdbRating.find_element_by_css_selector('div.ratingValue')
-            imdb_rating_item = divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span').text
-            earnings_item = divImdbRating.find_element_by_css_selector('a span.small').text
-
-            divPlotSummary = driver.find_element_by_css_selector('div.plot_summary')
-            divCreditSummaryItem = divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
-            director_item = divCreditSummaryItem[0].find_element_by_css_selector('a').text
-            arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
-
-            # initialize an empty string 
-            actor_item = "["
-            # traverse in the string   
-            for actor in arrActor:  
-                indexActor = arrActor.index(actor)
-                if indexActor < len(arrActor) - 1:
-                    actor_item += "'" + actor.text + "'" + ("," if indexActor < len(arrActor) - 2 else "")
-            actor_item += "]"
-
-            title_item = re.sub("[^a-zA-Z]", "", title_item)
-            print("title_item: %s" % title_item)
-            print("release_item: %s" % release_item)
-            print("audience_rating_item: %s" % audience_rating_item)
-            print("runtime_item: %s" % runtime_item)
-            print("genre_item: %s" % genre_item)
-            print("imdb_rating_item: %s" % imdb_rating_item)
-            print("earnings_item: %s" % earnings_item)
-            print("director_item: %s" % director_item)
-            print("actor_item: %s" % actor_item)
-        except NoSuchElementException:
-            pass
-        print("before navigating back ", driver.current_url)
-
-    def after_navigate_back(self, driver):
-        print("After navigating back ", driver.current_url)
-
-    def before_navigate_forward(self, driver):
-        print("before navigating forward ", driver.current_url)
-
-    def after_navigate_forward(self, driver):
-        print("After navigating forward ", driver.current_url)
-
-    def before_find(self, by, value, driver):
-        print("before find")
-
-    def after_find(self, by, value, driver):
-        print("after_find")
-
-    def before_click(self, element, driver):
-        print("before_click")
-
-    def after_click(self, element, driver):
-        print("after_click")
-
-    def before_change_value_of(self, element, driver):
-        print("before_change_value_of")
-
-    def after_change_value_of(self, element, driver):
-        print("after_change_value_of")
-
-    def before_execute_script(self, script, driver):
-        print("before_execute_script")
-
-    def after_execute_script(self, script, driver):
-        print("after_execute_script")
-
-    def before_close(self, driver):
-        print("tttt")
-
-    def after_close(self, driver):
-        print("before_close")
-
-    def before_quit(self, driver):
-        print("before_quit")
-
-    def after_quit(self, driver):
-        print("after_quit")
-
-    def on_exception(self, exception, driver):
-        print("on_exception")
-
 
 def scraping_without_selenium(csv_path):
+    
+    if not path.exists(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"):
+       print('Please install Chrome first.')
+       return
+
     crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
     csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
     url = 'https://www.imdb.com'
@@ -137,6 +29,7 @@ def scraping_without_selenium(csv_path):
     w.register('chrome',
                 None,
                 w.BackgroundBrowser(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"))
+
     chrome = w.get('chrome')
 
     # tmp_code:  next_link = '/search/title/?count=250&groups=top_1000&sort=user_rating%27'
@@ -220,13 +113,7 @@ def scraping_without_selenium(csv_path):
                                                     False,
                                                     0)
 
-            # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the second element
-            # found in <span name="nv" data-value="53,800,000">$53.80M</span>
-            earnings = crawlerOperation.extract_attribute(movies,
-                                                    'span' ,
-                                                    {'name' : 'nv'},
-                                                    False,
-                                                    1)
+           
 
             # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
             directors = crawlerOperation.extract_attribute(movies,
@@ -248,6 +135,12 @@ def scraping_without_selenium(csv_path):
                                                     slice(1, 5, None),
                                                     True)
 
+            descriptions =  crawlerOperation.extract_attribute(movies,
+                                                    'p',
+                                                    'text-muted',
+                                                    order=1,
+                                                    duplicated=True)
+
             # init dictionary
             df_dict_imdb = {'Title': titles, 
                         'Relase': release, 
@@ -256,26 +149,33 @@ def scraping_without_selenium(csv_path):
                         'Genre': genre, 
                         'IMDB Rating': imdb_rating,
                         'Votes': votes, 
-                        'Box Office Earnings': earnings, 
                         'Director': directors,
-                        'Actors': actors}
+                        'Actors': actors,
+                        'Description': descriptions }
 
             # export to csv with header and something new
-            print('3. Download data and export title, release, rating, votes,... to %s\imdb_%s.csv file' % (csv_path, str(index + 1)))
-            csvOperation.export_csv("imdb_" + str(index + 1),
+            print('3. Download data and export title, release, rating, votes,... to %s\imdb__nonselenium_%s.csv file' % (csv_path, str(index + 1)))
+            csvOperation.export_csv("imdb_nonselenium_" + str(index + 1),
                                     df_dict_imdb,
                                     csv_path)
 
-def scraping_with_selenium():
+def scraping_with_selenium(csv_path):
+    #os.getcwd(): get current working directory
+    driverPath = os.getcwd() + r'\WebScraping\python\libs\chromedriver.exe'
+    
+    csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
+
     #launch url
     url = "https://www.imdb.com/search/title"
 
     # Define Chrome options to open the window in maximized mode
     options = webdriver.ChromeOptions()
+    # options.headless = True # hide browser
     options.add_argument("--start-maximized")
 
     # create a new Firefox session
-    driver = webdriver.Chrome(executable_path=r'C:\apps\chromedriver.exe', options=options)
+    driver = webdriver.Chrome(executable_path=driverPath, options=options)
+    
     driver.implicitly_wait(30)
     driver.get(url)
 
@@ -283,11 +183,11 @@ def scraping_with_selenium():
     chkGroup100 = driver.find_element_by_xpath("//input[@id='groups-1']")
     chkGroup100.click()
 
-    ddlSearchCount = driver.find_element_by_id('search-count')
-    for optionSearchCount in ddlSearchCount.find_elements_by_tag_name('option'):
-        if optionSearchCount.text == '100 per page':
-            optionSearchCount.click() # select() in earlier versions of webdriver
-            break
+    # ddlSearchCount = driver.find_element_by_id('search-count')
+    # for optionSearchCount in ddlSearchCount.find_elements_by_tag_name('option'):
+    #     if optionSearchCount.text == '100 per page':
+    #         optionSearchCount.click() # select() in earlier versions of webdriver
+    #         break
 
     ddlSort = driver.find_element_by_name('sort')
     for optionSort in ddlSort.find_elements_by_tag_name('option'):
@@ -302,34 +202,92 @@ def scraping_with_selenium():
     #Selenium hands the page source to Beautiful Soup
     soup_level1 = BeautifulSoup(driver.page_source, 'lxml')
     divMain = soup_level1.find('div', id=re.compile("^main"))
-    divArtical = divMain.find_all('div')[0]
-    divListDetail = divMain.find_all('div')[2]
-    divLister = divMain.find_all('div')[0]
 
-    datalist = [] #empty list
+    counter = 0
+    titles = [] #empty list 
+    releases = []
+    audience_ratings = []
+    runtimes = []
+    genres = [] 
+    imdb_ratings = []
+    votes = [] 
+    directors = []
+    actors = []
+    descriptions = []
 
     #Beautiful Soup finds all Job Title links on the agency page and the loop begins
-    for currentSpan in divLister.findAll('span', attrs={'class':'lister-item-index'}):
+    for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
         #Selenium visits each Job Title page
-        python_button = driver.find_element_by_xpath("//*[contains(text(), '" + currentSpan.findNext('a').text + "')]")
-        python_button.click() #click link
-        # print('link: %s' % fileName)
+        detail_link = driver.find_element_by_xpath('//a[@href="' + currentSpan.findNext('a')["href"] + '"]')
+        detail_link.click() #click detail link
 
-        # #Selenium hands of the source of the specific job page to Beautiful Soup
-        # soup_level2=BeautifulSoup(driver.page_source, 'lxml')
+        #Selenium hands of the source of the specific job page to Beautiful Soup
+        soup_level2 = BeautifulSoup(driver.page_source, 'lxml')
+        divTitleOverviewWidget = soup_level2.find("div", id_="title-overview-widget")
 
-        # #Beautiful Soup grabs the HTML table on the page
-        # table = soup_level2.find_all('table')[0]
-        
-        # #Giving the HTML table to pandas to put in a dataframe object
-        # df = pd.read_html(str(table),header=0)
-        
-        # #Store the dataframe in a list
-        # datalist.append(df[0])
+        try:
+            title_item = driver.find_element_by_xpath('//h1[@class=""]').text
+            release_item = driver.find_element_by_xpath('//span[@id="titleYear"]').text
+
+            divSubtext = driver.find_element_by_css_selector('div.subtext')
+            arrSubtext = divSubtext.text.split(" | ")
+            audience_rating_item = arrSubtext[0]
+            runtime_item = arrSubtext[1]
+            genre_item = arrSubtext[2]
+
+            divImdbRating = driver.find_element_by_css_selector('div.imdbRating')
+            divRatingValue = divImdbRating.find_element_by_css_selector('div.ratingValue')
+            imdb_rating_item = divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span').text
+            vote_item = divImdbRating.find_element_by_css_selector('a span.small').text.strip()
+            desc_item = driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]').text
+
+            divPlotSummary = driver.find_element_by_css_selector('div.plot_summary')
+            divCreditSummaryItem = divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
+            director_item = divCreditSummaryItem[0].find_element_by_css_selector('a').text
+            arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
+
+            # initialize an empty string 
+            actor_item = "["
+            # traverse in the string   
+            for actor in arrActor:  
+                indexActor = arrActor.index(actor)
+                if indexActor < len(arrActor) - 1:
+                    actor_item += "'" + actor.text + "'" + ("," if indexActor < len(arrActor) - 2 else "")
+            actor_item += "]"
+
+            title_item = re.sub("[^a-zA-Z]", "", title_item)
+            # print("title_item: %s" % title_item)
+            # print("release_item: %s" % release_item)
+            # print("audience_rating_item: %s" % audience_rating_item)
+            # print("runtime_item: %s" % runtime_item)
+            # print("genre_item: %s" % genre_item)
+            # print("imdb_rating_item: %s" % imdb_rating_item)
+            # print("vote_item: %s" % vote_item)
+            # print("desc_item: %s" % desc_item)
+            # print("director_item: %s" % director_item)
+            # print("actor_item: %s" % actor_item)
+        except NoSuchElementException:
+            pass
+
+        #Store the dataframe in a list
+        titles.append(title_item.strip())
+        releases.append(release_item.strip())
+        audience_ratings.append(audience_rating_item.strip())
+        runtimes.append(runtime_item.strip())
+        genres.append(genre_item.strip())
+        imdb_ratings.append(imdb_rating_item.strip())
+        votes.append(vote_item.strip())
+        directors.append(director_item.strip())
+        actors.append(actor_item.strip())
+        descriptions.append(desc_item.strip())
         
         # #Ask Selenium to click the back button
         driver.execute_script("window.history.go(-1)") 
         
+        counter += 1
+        
+        if counter == 5:
+            break
         #end loop block
         
     #loop has completed
@@ -338,82 +296,23 @@ def scraping_with_selenium():
     driver.quit()
 
     #combine all pandas dataframes in the list into one big dataframe
-    # result = pd.concat([pd.DataFrame(datalist[i]) for i in range(len(datalist))],ignore_index=True)
+    # init dictionary
+    df_dict_imdb = {'Title': titles, 
+                    'Relase': releases, 
+                    'Audience Rating': audience_ratings,
+                    'Runtime': runtimes, 
+                    'Genre': genres, 
+                    'IMDB Rating': imdb_ratings,
+                    'Votes': votes, 
+                    'Director': directors,
+                    'Actors': actors,
+                    'Description': descriptions }
 
-    # #convert the pandas dataframe to JSON
-    # json_records = result.to_json(orient='records')
+    csvOperation.export_csv("imdb_selenium",
+                                    df_dict_imdb,
+                                    csv_path)
 
-    # #pretty print to CLI with tabulate
-    # #converts to an ascii table
-    # print(tabulate(result, headers=["Employee Name","Job Title","Overtime Pay","Total Gross Pay"],tablefmt='psql'))
-
-    # #get current working directory
-    # path = os.getcwd()
-
-    # #open, write, and close the file
-    # f = open(path + "\\fhsu_payroll_data.json","w") #FHSU
-    # f.write(json_records)
-    # f.close()
-            
-
-# def scraping_with_selenium(csv_path):
-#     csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
-
-#     url = 'https://www.imdb.com/search/title/?groups=top_100&count=100&start=1&sort=user_rating'
-
-#     # Define Chrome options to open the window in maximized mode
-#     options = webdriver.ChromeOptions()
-#     # options.headless = True # hide browser
-#     options.add_argument("--start-maximized")
-
-#     chrome_driver = webdriver.Chrome(executable_path=r'C:\apps\chromedriver.exe', options=options)
-#     edriver = EventFiringWebDriver(chrome_driver, MyListener())
-
-#     chrome_driver.get(url)
-#     detailLinkElem = chrome_driver.find_elements_by_css_selector('.lister-item-header a')
-#     # nextLinkElem = edriver.find_element_by_class_name('next-page')
-#     # detail_href = detailLinkElem[0].get_attribute('href')
-
-    
-#     for detailLinkItem in detailLinkElem:
-#         detailLinkItem.click()
-#         #Ask Selenium to click the back button
-#         chrome_driver.execute_script("window.history.go(-1)") 
-#     #     print(detailLinkItem.text)
-#         # edriver.back()
-    
-#     # time.sleep(refresh_time_in_seconds)
-#     # one step back in browser history
-    
-
-#     # open current link in chrome browser
-#     # while True:
-#     #     try:
-            
-#     #     except NoSuchElementException:
-#     #         break
-
-#     # chrome_browser.implicitly_wait(120)
-
-#     # index = 0
-
-#     # while nextLinkElem != None:
-#     #     print('\n')
-#     #     print('1. Request-Response from %s' % next_href)
-        
-#     #     print('2. Parse and Extract title, release, rating, votes,... from imdb website')
-
-#     #     print('3. Download data and export title, release, rating, votes,... to %s\imdb_%s.csv file' % (csv_path, str(index + 1)))
-        
-#     #     nextLinkElem.click()
-
-#     # next_href = nextLinkElem.get_attribute('href')
-#     # chrome_browser.get(next_href)
-#     # nextLinkElem = chrome_browser.find_element_by_class_name('next-page')
-#     # index += 1
-
-#     chrome_driver.close()
-
+                                    
 """
 -----// begin private member function: can access within the class only //-----
 """
@@ -451,7 +350,7 @@ def __main():
         if choice == 1:
             scraping_without_selenium(csv_path)
         elif choice == 2:
-            scraping_with_selenium()
+            scraping_with_selenium(csv_path)
         else:
             print('You choose nothing')
     else:

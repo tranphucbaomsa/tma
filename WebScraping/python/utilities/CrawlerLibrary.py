@@ -46,12 +46,15 @@ class CrawlerOperation:
                             class_2='',
                             text_attribute=True, 
                             order=None, 
-                            nested=False):        
+                            nested=False,
+                            duplicated=False):        
         data_list = []
         for movie in movies:
             if text_attribute:
                 if nested:  # Extracting Nested Values: director and actors
                     data_list.append(self.__nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
+                elif duplicated:  # Extracting same class: description
+                    data_list.append(self.__order_text_value(movie, tag_1, class_1, order))
                 else:  # Extracting text: titles and release year
                     data_list.append(self.__text_value(movie, tag_1, class_1))
             else:  # Extracting Numerical Values: imdb_rating  
@@ -103,7 +106,7 @@ class CrawlerOperation:
                             class_2, 
                             order=None):  
         if not order:
-            return movie.find(tag_1, class_1).find(tag_2, class_2).text
+            return movie.find(tag_1, class_1).find(tag_2, class_2).text.strip()
         else:
             return [val.text for val in movie.find(tag_1, class_1).findAll(tag_2, class_2)[order]]
 
@@ -113,9 +116,24 @@ class CrawlerOperation:
                     tag, 
                     class_=None):   
         if movie.find(tag, class_):
-            return movie.find(tag, class_).text
+            return movie.find(tag, class_).text.strip()
         else:
             return
+
+    # extract numerical values from movie item
+    def __order_text_value(self, 
+                        movie, 
+                        tag, 
+                        class_=None, 
+                        order=None): 
+        if order:
+            if len(movie.findAll(tag, class_)) > 1:
+                to_extract = movie.findAll(tag, class_)[order].text
+            else:
+                to_extract = None
+        else:
+            to_extract = movie.find(tag, class_).text
+        return to_extract.strip() # strip(): removing any leading and trailing whitespaces including tabs (\t)
     """
     -----// end private member function: can access within the class only //-----
     """
