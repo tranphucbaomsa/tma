@@ -5,6 +5,7 @@ from business_processor.scraping_process import ScrapingNonSelenium, ScrapingSel
 """
 -----// begin private member function: can access within the class only //-----
 """
+# show input choice to user (1,2,3,...)
 def __let_user_pick(options):
     print("Please choose:")
     for idx, element in enumerate(options):
@@ -17,6 +18,7 @@ def __let_user_pick(options):
         pass
     return None
 
+# show input path that store csv to user 
 def __let_user_input_path():
     path = input("Please enter path will contain csv file (Ex: D:\ExportDocument):   ")
     try:
