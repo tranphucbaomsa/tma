@@ -36,7 +36,7 @@ pip install beautifulsoup4 requests pandas
 We have 2 file in project:
 
 * CrawlerLibrary.py: This is a library file for scraping website.
-* BeautifulSoupCrawler.py: This is the main file of the program using the library file (CrawlerLibrary.py)
+* main.py: This is the main file of the program using the library file (CrawlerLibrary.py)
     
 After taking a look at the IMDB webpage, we’ll set out to extract (all highlighted in the above screenshot of the page):
 
@@ -47,9 +47,9 @@ After taking a look at the IMDB webpage, we’ll set out to extract (all highlig
 *  Genre
 *  IMDB rating
 *  Number of votes
-*  Box office earnings
 *  Director
 *  Primary actors
+*  Description
 
 ## Running the code
 
@@ -60,8 +60,14 @@ The top 100 movies will show as:
 
 ## Reference
 
-*  Beautiful Soup: https://pypi.org/project/beautifulsoup4/
-*  Python Requests Module: https://pypi.org/project/requests/
-*  Python Data Analysis Library: https://pandas.pydata.org/
-*  Modules in Python 3: https://www.digitalocean.com/community/tutorials/how-to-import-modules-in-python-3
+*  Beautiful Soup:  https://pypi.org/project/beautifulsoup4/
+*  Python Requests Module:  https://pypi.org/project/requests/
+*  Python Data Analysis Library:  https://pandas.pydata.org/
+*  Convenient Web-browser controller:  https://docs.python.org/3/library/webbrowser.html
+*  Regular expression operations:  https://docs.python.org/3/library/re.html
+*  Time access and conversions:  https://docs.python.org/3/library/time.html
+*  Selenium with Python:  https://selenium-python.readthedocs.io/
+*  Miscellaneous operating system interfaces:  https://docs.python.org/3/library/os.html
+*  Common pathname manipulations:  https://docs.python.org/3/library/os.path.html
+*  Modules in Python 3:  https://www.digitalocean.com/community/tutorials/how-to-import-modules-in-python-3
 
