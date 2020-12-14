@@ -2,15 +2,23 @@
 # defined in business_processor\scraping_process.py
 from business_processor.scraping_process import ScrapingNonSelenium, ScrapingSelenium
 
+# import EnumStatusCode class
+# defined in utilities\app_enum.py
+from utilities.app_enum import EnumMainOptions
+
+# import EnglishLocalizer and VietnameseLocalizer class
+# defined in utilities\language_localize.py
+from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
+
 """
 -----// begin private member function: can access within the class only //-----
 """
 # show input choice to user (1,2,3,...)
-def __let_user_pick(options):
-    print("Please choose:")
+def __let_user_pick(options, vi):
+    print(vi.localize("please_choose"))
     for idx, element in enumerate(options):
         print("{}) {}".format(idx+1,element))
-    i = input("Enter number: ")
+    i = input(vi.localize("enter_number"))
     try:
         if 0 < int(i) <= len(options):
             return int(i)
@@ -19,27 +27,40 @@ def __let_user_pick(options):
     return None
 
 # show input path that store csv to user 
-def __let_user_input_path():
-    path = input("Please enter path will contain csv file (Ex: D:\ExportDocument):   ")
+def __let_user_input_path(vi):
+    path = input(vi.localize("enter_path"))
     try:
         if path:
             return path
     except:
         pass
     return None
+
+def __Factory(language="English"): 
+    """Factory Method"""
+    localizers = { 
+        "vi": VietnameseLocalizer, 
+        "en": EnglishLocalizer
+    } 
+  
+    return localizers[language]() 
 """
 -----// end private member function: can access within the class only //-----
 """
 
 def main():
+    vi = __Factory("vi")
+
     print('-------WebScraping process start.---------')
     print('\n')
 
-    csv_path = __let_user_input_path() # returns string (Ex: D:\ExportDocument)
+    csv_path = __let_user_input_path(vi) # returns string (Ex: D:\ExportDocument)
 
     if csv_path != None:
-        options = ["Scraping Without Selenium.", "Scraping With Selenium."]
-        choice = __let_user_pick(options) # returns integer
+        # tmp_code: options = ["Scraping Without Selenium.", "Scraping With Selenium."]
+        # convert the enum object [EnumMainOptions] to a list [options]
+        options = [name for name in dir(EnumMainOptions) if not name.startswith('_')]
+        choice = __let_user_pick(options, vi) # returns integer
 
         if choice == 1:
             sns = ScrapingNonSelenium(csv_path)
@@ -48,9 +69,9 @@ def main():
             ss = ScrapingSelenium(csv_path)
             ss.scrapWebsite()
         else:
-            print('You choose nothing')
+            print(vi.localize("choose_nothing"))
     else:
-         print('Please enter csv path first')
+         print(vi.localize("enter_csv_path_first"))
 
     print('\n')
     print('-------WebScraping process finish.---------')

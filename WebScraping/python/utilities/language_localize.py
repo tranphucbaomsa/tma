@@ -1,0 +1,34 @@
+# Python Code for factory method  
+# it comes under the creational  
+# Factory Design Pattern 
+  
+class VietnameseLocalizer: 
+    # it simply returns the vietnamese version
+    def __init__(self): 
+        self.translations = {
+            "enter_path": "Vui lòng nhập đường dẫn sẽ chứa tệp csv (Vd: D:\ExportDocument): ", 
+            "please_choose": "Vui lòng chọn: ", 
+            "enter_number": "Nhập số: ",
+            "choose_nothing":"Bạn chưa chọn gì cả",
+            "enter_csv_path_first":"Vui lòng nhập đường dẫn sẽ lưu csv trước"
+            } 
+  
+    def localize(self, msg): 
+        # change the message using translations
+        return self.translations.get(msg, msg) 
+  
+class EnglishLocalizer: 
+    # it simply returns the english version
+    def __init__(self): 
+        self.translations = {
+            "enter_path": "Please enter path will contain csv file (Ex: D:\ExportDocument): ", 
+            "please_choose": "Please choose: ", 
+            "enter_number":"Enter number: ",
+            "choose_nothing":"You choose nothing",
+            "enter_csv_path_first":"Please enter csv path first"
+            }
+
+    # Simply return the same message
+    def localize(self, msg): 
+        return msg 
+  

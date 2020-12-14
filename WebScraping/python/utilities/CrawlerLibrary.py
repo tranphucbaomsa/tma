@@ -3,6 +3,8 @@ We can then import these at begin
 bs4 (beautifulsoup4): Allows us to parse the HTML of the site and convert it to a BeautifulSoup object, which represents the HTML as a nested data structure.
 pandas: Python Data Analysis Library (The goto Python package for dataset manipulation)
 requests: The package that allows us to connect the site of choice.
+constant: define multi variable that called everywhere
+app_enum: define multi option that called everywhere
 """
 import bs4
 import pandas as pd

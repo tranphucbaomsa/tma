@@ -139,15 +139,15 @@ class ScrapingNonSelenium(BaseScraping):
                imdb_rating = self.__crawlerOperation.extract_attribute(movies,
                                                             'div',
                                                             'inline-block ratings-imdb-rating',
-                                                            False)
+                                                            text_attribute=False)
 
                # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
                # found in <span name="nv" data-value="47467">47,467</span>
                votes = self.__crawlerOperation.extract_attribute(movies,
                                                        'span' ,
                                                        {'name' : 'nv'},
-                                                       False,
-                                                       0)
+                                                       text_attribute=False,
+                                                       order=0)
 
                
 
@@ -157,9 +157,9 @@ class ScrapingNonSelenium(BaseScraping):
                                                             '',
                                                             'a',
                                                             '',
-                                                            True,
-                                                            0,
-                                                            True)
+                                                            text_attribute=True,
+                                                            order=0,
+                                                            nested=True)
 
                # actors always correspond to the remaining a tags
                actors = self.__crawlerOperation.extract_attribute(movies,
@@ -167,9 +167,9 @@ class ScrapingNonSelenium(BaseScraping):
                                                        '',
                                                        'a',
                                                        '',
-                                                       True,
-                                                       slice(1, 5, None),
-                                                       True)
+                                                       text_attribute=True,
+                                                       order=slice(1, 5, None),
+                                                       nested=True)
 
                descriptions =  self.__crawlerOperation.extract_attribute(movies,
                                                        'p',
