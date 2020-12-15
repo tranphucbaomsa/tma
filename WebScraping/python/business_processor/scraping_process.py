@@ -1,7 +1,6 @@
-# import CrawlerOperation and CsvOperation class
+# import CrawlerOperation, CsvOperation, DateTimeOperation class
 # defined in CrawlerLibrary.py
-from utilities.CrawlerLibrary import CrawlerOperation
-from utilities.CrawlerLibrary import CsvOperation
+from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation, DataOperation
 
 # import the necessary packages
 # selenium automates browser
@@ -13,6 +12,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 import re  # Regular expression operations
 from bs4 import BeautifulSoup
+from utilities import constant
 
 # super class 
 class BaseScraping: 
@@ -43,17 +43,19 @@ class ScrapingNonSelenium(BaseScraping):
      # private data members
      __crawlerOperation = None
      __csvOperation = None
+     __dtOperation = None
 
      # constructor  
      def __init__(self, csvPath):
           self.__crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
           self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
+          self.__dtOperation = DateTimeOperation.getInstance()  # Object singleton instantiation of DateTimeOperation class
           BaseScraping.__init__(self, csvPath)
      
      # public member function  
      def scrapWebsite(self): 
           # accessing protected member functions of super class  
-          self._setDriverPath(r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
+          self._setDriverPath(constant.CHROME_EXECUTABLE_PATH)
 
           # accessing protected data members of super class  
           if not path.exists(self._driverPath):
@@ -124,9 +126,15 @@ class ScrapingNonSelenium(BaseScraping):
 
                # Runtime can be found under the tag span and class runtime
                # found in <span class="runtime">153 min</span>
-               runtime = self.__crawlerOperation.extract_attribute(movies,
+               runtimeTemp = self.__crawlerOperation.extract_attribute(movies,
                                                        'span',
                                                        'runtime')
+
+               runtime = []
+
+               for itemRuntime in runtimeTemp:
+                    itemRuntime = itemRuntime.replace('min', '')
+                    runtime.append(self.__dtOperation.convert_time_to_preferred_format(int(itemRuntime)))
 
                # Genre can be found under the tag span and class genre
                # found in <span class="genre">Drama</span>
@@ -179,15 +187,15 @@ class ScrapingNonSelenium(BaseScraping):
 
                # init dictionary
                df_dict_imdb = {'Title': titles, 
-                         'Relase': release, 
-                         'Audience Rating': audience_rating,
-                         'Runtime': runtime, 
-                         'Genre': genre, 
-                         'IMDB Rating': imdb_rating,
-                         'Votes': votes, 
-                         'Director': directors,
-                         'Actors': actors,
-                         'Description': descriptions }
+                              'Release': release, 
+                              'Audience_Rating': audience_rating,
+                              'Runtime': runtime, 
+                              'Genre': genre, 
+                              'Imdb_Rating': imdb_rating,
+                              'Votes': votes, 
+                              'Director': directors,
+                              'Actors': actors,
+                              'Desc': descriptions }
 
                # export to multi csv file with header
                print('3. Download data and export title, release, rating, votes,... to %s\imdb__nonselenium_%s.csv file' % (self._csvPath, str(index + 1)))
@@ -198,10 +206,12 @@ class ScrapingNonSelenium(BaseScraping):
 # derived class 
 class ScrapingSelenium(BaseScraping): 
      # private data members
+     __dataOperation = None
      __csvOperation = None
 
      # constructor  
      def __init__(self, csvPath):
+          self.__dataOperation = DataOperation.getInstance()  # Object singleton instantiation of DataOperation class
           self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
           BaseScraping.__init__(self, csvPath)  
      
@@ -209,7 +219,7 @@ class ScrapingSelenium(BaseScraping):
      def scrapWebsite(self): 
           # accessing protected member functions of super class 
           #os.getcwd(): get current working directory
-          self._setDriverPath(os.getcwd() + r'\WebScraping\python\libs\chromedriver.exe')
+          self._setDriverPath(os.getcwd() + constant.CHROME_DRIVER_PATH)
 
           # accessing protected data members of super class  
           launchUrl = self._url + "/search/title"
@@ -267,6 +277,17 @@ class ScrapingSelenium(BaseScraping):
           actors = []
           descriptions = []
 
+          title_item = ''
+          release_item = ''
+          audience_rating_item = ''
+          runtime_item = ''
+          genre_item = ''
+          imdb_rating_item = ''
+          vote_item = ''
+          director_item = ''
+          actor_item = ''
+          desc_item = ''
+
           print('3. Visit and Extract data from detail website')
 
           #Beautiful Soup finds all Job Title links on the agency page and the loop begins
@@ -297,7 +318,7 @@ class ScrapingSelenium(BaseScraping):
 
                     divPlotSummary = driver.find_element_by_css_selector('div.plot_summary')
                     divCreditSummaryItem = divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
-                    director_item = divCreditSummaryItem[0].find_element_by_css_selector('a').text
+                    director_item = divCreditSummaryItem[0].find_element_by_css_selector('a').text if divCreditSummaryItem[0].find_element_by_css_selector('a') != None else ""  
                     arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
 
                     # initialize an empty string 
@@ -328,11 +349,11 @@ class ScrapingSelenium(BaseScraping):
                # #Ask Selenium to click the back button
                driver.execute_script("window.history.go(-1)") 
                
-               counter += 1
-
                print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + currentSpan.findNext('a')["href"]))
                
-               if counter == 10:
+               counter += 1
+
+               if counter == 6:
                     break
                #end loop block
                
@@ -344,18 +365,21 @@ class ScrapingSelenium(BaseScraping):
           #combine all pandas dataframes in the list into one big dataframe
           # init dictionary
           df_dict_imdb = {'Title': titles, 
-                              'Relase': releases, 
-                              'Audience Rating': audience_ratings,
+                              'Release': releases, 
+                              'Audience_Rating': audience_ratings,
                               'Runtime': runtimes, 
                               'Genre': genres, 
-                              'IMDB Rating': imdb_ratings,
+                              'Imdb_Rating': imdb_ratings,
                               'Votes': votes, 
                               'Director': directors,
                               'Actors': actors,
-                              'Description': descriptions }
+                              'Desc': descriptions }
 
           # export to single csv file with header
           print('4. Download data and export title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
           self.__csvOperation.export_csv("imdb_selenium",
                                              df_dict_imdb,
                                              self._csvPath) 
+
+          print('5. Save imdb data into database')
+          self.__dataOperation.insert_scrapped_data(df_dict_imdb)

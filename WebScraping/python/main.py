@@ -36,7 +36,8 @@ def __let_user_input_path(vi):
         pass
     return None
 
-def __Factory(language="English"): 
+# message will be translate to multi language
+def __LanguageTranslation(language="en"): 
     """Factory Method"""
     localizers = { 
         "vi": VietnameseLocalizer, 
@@ -49,7 +50,7 @@ def __Factory(language="English"):
 """
 
 def main():
-    vi = __Factory("vi")
+    vi = __LanguageTranslation("vi")
 
     print('-------WebScraping process start.---------')
     print('\n')

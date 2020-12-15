@@ -5,12 +5,16 @@ pandas: Python Data Analysis Library (The goto Python package for dataset manipu
 requests: The package that allows us to connect the site of choice.
 constant: define multi variable that called everywhere
 app_enum: define multi option that called everywhere
+sqlite_process: all function about database (CRUD)
+os: Miscellaneous operating system interfaces
 """
 import bs4
 import pandas as pd
 import requests
 from utilities import constant
 from utilities.app_enum import EnumStatusCode
+from data_processor.sqlite_process import StoringData
+import os
 
 # all operation about crawler
 class CrawlerOperation:
@@ -140,7 +144,6 @@ class CrawlerOperation:
     -----// end private member function: can access within the class only //-----
     """
 
-
 # all operation about csv file
 class CsvOperation:
     __instance = None
@@ -179,6 +182,77 @@ class CsvOperation:
     -----// end public member function: easily accessible from any part of the program //-----
     """
 
+class DataOperation:
+    __instance = None
+
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if DataOperation.__instance == None:
+         DataOperation()
+      return DataOperation.__instance
+
+    def __init__(self):  # init method or constructor   
+        # Virtually private constructor.
+        if DataOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            DataOperation.__instance = self
+
+    # When reading the csv:
+    # - Place 'r' before the path string to read any special characters, such as '\'
+    # - Don't forget to put the file name at the end of the path + '.csv'
+    # - Before running the code, make sure that the column names in the CSV files match with the column names in the tables created and in the query below
+    # - If needed make sure that all the columns are in a TEXT format
+    def insert_scrapped_data(self,
+                                df_dict):
+        for index, row in df_dict.iterrows():
+            print(row[index])
+        
+        # init method or constructor                          
+        # sd = StoringData.getInstance()
+
+        # # 1. First, connect to the SQLite database by creating a Connection object
+        # conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
+
+        # # 2.Second, create a Cursor object by calling the cursor method of the Connection object.
+        # cur = conn.cursor()
+
+        # # 3. Third, insert data by dataframe.
+        # with conn:
+        #     # Iterate over rows of cars
+        #     for index, row in df_dict.iterrows():
+        #         print(row[index])
+
+        #     read_clients = pd.DataFrame(df_dict)  # We use pandas to visualize the data
+        #     read_clients.to_sql('IMDb', conn, if_exists='append', index = False) # Insert the values from the dataframe into the table 'IMDb' 
+
+        # return cur.lastrowid
+
+class DateTimeOperation:
+    __instance = None
+
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if DateTimeOperation.__instance == None:
+         DateTimeOperation()
+      return DateTimeOperation.__instance
+
+    def __init__(self):  # init method or constructor   
+        # Virtually private constructor.
+        if DateTimeOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            DateTimeOperation.__instance = self
+
+    def convert_time_to_preferred_format(self, n):
+        sec = n * 60
+        hour = sec // 3600
+        sec %= 3600
+        min = sec // 60
+        sec %= 60
+        return "%dh %02dmin" % (hour, min) 
 
 # get error message from status code
 def response_message(status_code):
