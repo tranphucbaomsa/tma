@@ -13,7 +13,6 @@ import pandas as pd
 import requests
 from utilities import constant
 from utilities.app_enum import EnumStatusCode
-from data_processor.sqlite_process import StoringData
 import os
 
 # all operation about crawler
@@ -181,53 +180,6 @@ class CsvOperation:
     """
     -----// end public member function: easily accessible from any part of the program //-----
     """
-
-class DataOperation:
-    __instance = None
-
-    @staticmethod 
-    def getInstance():
-      # Static access method.
-      if DataOperation.__instance == None:
-         DataOperation()
-      return DataOperation.__instance
-
-    def __init__(self):  # init method or constructor   
-        # Virtually private constructor.
-        if DataOperation.__instance != None:
-            raise Exception("This class is a singleton!")
-        else:
-            DataOperation.__instance = self
-
-    # When reading the csv:
-    # - Place 'r' before the path string to read any special characters, such as '\'
-    # - Don't forget to put the file name at the end of the path + '.csv'
-    # - Before running the code, make sure that the column names in the CSV files match with the column names in the tables created and in the query below
-    # - If needed make sure that all the columns are in a TEXT format
-    def insert_scrapped_data(self,
-                                df_dict):
-        for index, row in df_dict.iterrows():
-            print(row[index])
-        
-        # init method or constructor                          
-        # sd = StoringData.getInstance()
-
-        # # 1. First, connect to the SQLite database by creating a Connection object
-        # conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
-
-        # # 2.Second, create a Cursor object by calling the cursor method of the Connection object.
-        # cur = conn.cursor()
-
-        # # 3. Third, insert data by dataframe.
-        # with conn:
-        #     # Iterate over rows of cars
-        #     for index, row in df_dict.iterrows():
-        #         print(row[index])
-
-        #     read_clients = pd.DataFrame(df_dict)  # We use pandas to visualize the data
-        #     read_clients.to_sql('IMDb', conn, if_exists='append', index = False) # Insert the values from the dataframe into the table 'IMDb' 
-
-        # return cur.lastrowid
 
 class DateTimeOperation:
     __instance = None

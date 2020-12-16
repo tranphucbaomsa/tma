@@ -1,13 +1,9 @@
-# import ScrapingNonSelenium and ScrapingSelenium class
-# defined in business_processor\scraping_process.py
+# We can then import these at begin
+# import ScrapingNonSelenium and ScrapingSelenium class in business_processor\scraping_process.py
+# import EnumStatusCode class in utilities\app_enum.py
+# import EnglishLocalizer and VietnameseLocalizer class in utilities\language_localize.py
 from business_processor.scraping_process import ScrapingNonSelenium, ScrapingSelenium
-
-# import EnumStatusCode class
-# defined in utilities\app_enum.py
 from utilities.app_enum import EnumMainOptions
-
-# import EnglishLocalizer and VietnameseLocalizer class
-# defined in utilities\language_localize.py
 from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
 
 """

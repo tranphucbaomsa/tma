@@ -1,6 +1,9 @@
-# import CrawlerOperation, CsvOperation, DateTimeOperation class
-# defined in CrawlerLibrary.py
-from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation, DataOperation
+# import CrawlerOperation, CsvOperation, DateTimeOperation class in CrawlerLibrary.py
+# import StoringData class in sqlite_process.py 
+# import constant
+from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation 
+from data_processor.sqlite_process import StoringData
+from utilities import constant
 
 # import the necessary packages
 # selenium automates browser
@@ -12,7 +15,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 import re  # Regular expression operations
 from bs4 import BeautifulSoup
-from utilities import constant
+import pandas as pd
+import datetime
 
 # super class 
 class BaseScraping: 
@@ -44,12 +48,14 @@ class ScrapingNonSelenium(BaseScraping):
      __crawlerOperation = None
      __csvOperation = None
      __dtOperation = None
+     __businessOperation = None
 
      # constructor  
      def __init__(self, csvPath):
           self.__crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
           self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
           self.__dtOperation = DateTimeOperation.getInstance()  # Object singleton instantiation of DateTimeOperation class
+          self.__businessOperation = BusinessOperation.getInstance()  # Object singleton instantiation of BusinessOperation class
           BaseScraping.__init__(self, csvPath)
      
      # public member function  
@@ -90,7 +96,23 @@ class ScrapingNonSelenium(BaseScraping):
                else:
                     break
 
+          imdb = []
+          key_item = ''
+          title_item = ''
+          release_item = ''
+          audience_rating_item = ''
+          runtime_item = ''
+          genre_item = '' 
+          imdb_rating_item = ''
+          vote_item = '' 
+          director_item = ''
+          actor_item = ''
+          desc_item = ''
+          now = ''
+         
           for item_next_href in next_href:   # Get each item in a next_href list:
+               imdb.clear()
+
                index = next_href.index(item_next_href)
 
                print('\n')
@@ -109,7 +131,7 @@ class ScrapingNonSelenium(BaseScraping):
                                         class_='lister-item-content')
 
                # we can construct a list of all movie titles
-               titles =  self.__crawlerOperation.extract_attribute(movies,
+               titlesTemp =  self.__crawlerOperation.extract_attribute(movies,
                                                        'a')
 
                # Release years can be found under the tag span and class lister-item-year text-muted unbold
@@ -117,6 +139,10 @@ class ScrapingNonSelenium(BaseScraping):
                release = self.__crawlerOperation.extract_attribute(movies,
                                                        'span',
                                                        'lister-item-year text-muted unbold')
+               
+               titles = []
+               for i in range(len(titlesTemp)):
+                    titles.append(titlesTemp[i] + ' ' + release[i])
 
                # Audience rating can be found under the tag span and class certificate
                # found in <span class="certificate">TV-MA</span>
@@ -129,9 +155,8 @@ class ScrapingNonSelenium(BaseScraping):
                runtimeTemp = self.__crawlerOperation.extract_attribute(movies,
                                                        'span',
                                                        'runtime')
-
+              
                runtime = []
-
                for itemRuntime in runtimeTemp:
                     itemRuntime = itemRuntime.replace('min', '')
                     runtime.append(self.__dtOperation.convert_time_to_preferred_format(int(itemRuntime)))
@@ -203,15 +228,50 @@ class ScrapingNonSelenium(BaseScraping):
                                         df_dict_imdb,
                                         self._csvPath)
 
+               for j in range(len(titles)):
+                    key_item = re.sub("[^a-zA-Z0-9]", "", titlesTemp[j])
+                    title_item = titles[j]
+                    release_item = release[j]
+                    audience_rating_item = audience_rating[j] 
+                    runtime_item =  runtime[j]
+                    genre_item =  genre[j]
+                    imdb_rating_item = imdb_rating[j] 
+                    vote_item = votes[j] 
+                    director_item = directors[j] 
+                    actor_item = actors[j] 
+                    desc_item = descriptions[j]
+                    now = datetime.datetime.now()
+
+                    imdb.extend(
+                         [    key_item, 
+                              title_item, 
+                              release_item, 
+                              audience_rating_item, 
+                              runtime_item, 
+                              genre_item, 
+                              imdb_rating_item, 
+                              vote_item, 
+                              director_item, 
+                              actor_item, 
+                              desc_item.strip(),
+                              now.strftime(constant.SHORT_DATETIME_FORMAT),
+                              now.strftime(constant.SHORT_DATETIME_FORMAT) ]
+                    )
+
+                    
+               print('imdb key: %s' % imdb[0])
+               # print('4. Save imdb data into database')
+               # self.__businessOperation.insert_scrapped_data_by_list(imdb)
+
 # derived class 
 class ScrapingSelenium(BaseScraping): 
      # private data members
-     __dataOperation = None
+     __businessOperation = None
      __csvOperation = None
 
      # constructor  
      def __init__(self, csvPath):
-          self.__dataOperation = DataOperation.getInstance()  # Object singleton instantiation of DataOperation class
+          self.__businessOperation = BusinessOperation.getInstance()  # Object singleton instantiation of BusinessOperation class
           self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
           BaseScraping.__init__(self, csvPath)  
      
@@ -227,8 +287,6 @@ class ScrapingSelenium(BaseScraping):
           # Define Chrome options to open the window in maximized mode
           options = webdriver.ChromeOptions()
           # options.headless = True # hide browser
-          options.add_argument('--ignore-certificate-errors')
-          options.add_argument('--ignore-ssl-errors')
           options.add_argument("--start-maximized")
 
           print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending)')
@@ -265,7 +323,8 @@ class ScrapingSelenium(BaseScraping):
           soup_level1 = BeautifulSoup(driver.page_source, 'lxml')
           divMain = soup_level1.find('div', id=re.compile("^main"))
 
-          counter = 1
+          counter = 1  
+          keys = [] #empty list
           titles = [] #empty list 
           releases = []
           audience_ratings = []
@@ -276,22 +335,28 @@ class ScrapingSelenium(BaseScraping):
           directors = []
           actors = []
           descriptions = []
+          imdb = []
 
+          key_item = ''
           title_item = ''
           release_item = ''
           audience_rating_item = ''
           runtime_item = ''
-          genre_item = ''
+          genre_item = '' 
           imdb_rating_item = ''
-          vote_item = ''
+          vote_item = '' 
           director_item = ''
           actor_item = ''
           desc_item = ''
+          now = ''
 
           print('3. Visit and Extract data from detail website')
 
           #Beautiful Soup finds all Job Title links on the agency page and the loop begins
           for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
+               imdb.clear() 
+               
+
                #Selenium visits each Job Title page
                detail_link = driver.find_element_by_xpath('//a[@href="' + currentSpan.findNext('a')["href"] + '"]')
                detail_link.click() #click detail link
@@ -301,23 +366,24 @@ class ScrapingSelenium(BaseScraping):
                divTitleOverviewWidget = soup_level2.find("div", id_="title-overview-widget")
 
                try:
-                    title_item = driver.find_element_by_xpath('//h1[@class=""]').text
-                    release_item = driver.find_element_by_xpath('//span[@id="titleYear"]').text
+                    title_item = driver.find_element_by_xpath('//h1[@class=""]').text if driver.find_element_by_xpath('//h1[@class=""]') != None else ""    
+                    release_item = driver.find_element_by_xpath('//span[@id="titleYear"]').text if driver.find_element_by_xpath('//span[@id="titleYear"]') != None else ""  
 
                     divSubtext = driver.find_element_by_css_selector('div.subtext')
-                    arrSubtext = divSubtext.text.split(" | ")
-                    audience_rating_item = arrSubtext[0]
-                    runtime_item = arrSubtext[1]
-                    genre_item = arrSubtext[2]
+                    arrSubtext = divSubtext.text.split(" | ") if divSubtext != None else None
+                    if arrSubtext != None:
+                         audience_rating_item = arrSubtext[0]
+                         runtime_item = arrSubtext[1]
+                         genre_item = arrSubtext[2]
 
                     divImdbRating = driver.find_element_by_css_selector('div.imdbRating')
                     divRatingValue = divImdbRating.find_element_by_css_selector('div.ratingValue')
-                    imdb_rating_item = divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span').text
-                    vote_item = divImdbRating.find_element_by_css_selector('a span.small').text.strip()
-                    desc_item = driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]').text
+                    imdb_rating_item = divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span').text if divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span') != None else ""   
+                    vote_item = divImdbRating.find_element_by_css_selector('a span.small').text if divImdbRating.find_element_by_css_selector('a span.small') != None else ""  
+                    desc_item = driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]').text if driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]') != None else "" 
 
                     divPlotSummary = driver.find_element_by_css_selector('div.plot_summary')
-                    divCreditSummaryItem = divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
+                    divCreditSummaryItem =  divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
                     director_item = divCreditSummaryItem[0].find_element_by_css_selector('a').text if divCreditSummaryItem[0].find_element_by_css_selector('a') != None else ""  
                     arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
 
@@ -330,24 +396,46 @@ class ScrapingSelenium(BaseScraping):
                               actor_item += "'" + actor.text + "'" + ("," if indexActor < len(arrActor) - 2 else "")
                     actor_item += "]"
 
-                    title_item = re.sub("[^a-zA-Z' ]", "", title_item)
+                    # title_item = re.sub("[^a-zA-Z0-9:' ]", "", title_item)
+                    key_item = re.sub("[^a-zA-Z0-9]", "", title_item)
                except NoSuchElementException:
                     pass
 
                #Store the dataframe in a list
+               keys.append(key_item)
                titles.append(title_item.strip())
-               releases.append(release_item.strip())
-               audience_ratings.append(audience_rating_item.strip())
-               runtimes.append(runtime_item.strip())
-               genres.append(genre_item.strip())
-               imdb_ratings.append(imdb_rating_item.strip())
-               votes.append(vote_item.strip())
-               directors.append(director_item.strip())
-               actors.append(actor_item.strip())
+               releases.append(release_item)
+               audience_ratings.append(audience_rating_item)
+               runtimes.append(runtime_item)
+               genres.append(genre_item)
+               imdb_ratings.append(imdb_rating_item)
+               votes.append(vote_item)
+               directors.append(director_item)
+               actors.append(actor_item)
                descriptions.append(desc_item.strip())
+               now = datetime.datetime.now()
+
+               imdb.extend(
+                    [    key_item, 
+                         title_item.strip(), 
+                         release_item, 
+                         audience_rating_item, 
+                         runtime_item, 
+                         genre_item, 
+                         imdb_rating_item, 
+                         vote_item, 
+                         director_item, 
+                         actor_item, 
+                         desc_item.strip(),
+                         now.strftime(constant.SHORT_DATETIME_FORMAT),
+                         now.strftime(constant.SHORT_DATETIME_FORMAT) ]
+               )
+
+               self.__businessOperation.insert_scrapped_data_by_list(imdb)
                
                # #Ask Selenium to click the back button
                driver.execute_script("window.history.go(-1)") 
+               # driver.back()
                
                print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + currentSpan.findNext('a')["href"]))
                
@@ -380,6 +468,58 @@ class ScrapingSelenium(BaseScraping):
           self.__csvOperation.export_csv("imdb_selenium",
                                              df_dict_imdb,
                                              self._csvPath) 
+          
 
-          print('5. Save imdb data into database')
-          self.__dataOperation.insert_scrapped_data(df_dict_imdb)
+
+class BusinessOperation:
+     __instance = None
+
+     @staticmethod 
+     def getInstance():
+          # Static access method.
+          if BusinessOperation.__instance == None:
+               BusinessOperation()
+          return BusinessOperation.__instance
+
+     def __init__(self):  # init method or constructor   
+          # Virtually private constructor.
+          if BusinessOperation.__instance != None:
+               raise Exception("This class is a singleton!")
+          else:
+               BusinessOperation.__instance = self
+
+     def insert_scrapped_data_by_dict(self, 
+                                        df_dict):
+          # init method or constructor                          
+          sd = StoringData.getInstance()
+
+          # 1. First, connect to the SQLite database by creating a Connection object
+          conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
+
+          # 2.Second, create a Cursor object by calling the cursor method of the Connection object.
+          cur = conn.cursor()
+
+          # 3. Third, insert data by dataframe.
+          with conn:
+               read_clients = pd.DataFrame(df_dict)  # We use pandas to visualize the data
+               read_clients.to_sql('IMDb', conn, if_exists='append', index = False) # Insert the values from the dataframe into the table 'IMDb' 
+
+
+     def insert_scrapped_data_by_list(self, 
+                                        imdb):
+          # 1. First, init method or constructor                          
+          sd = StoringData.getInstance()
+
+          # 2. Second, connect to the SQLite database by creating a Connection object
+          conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
+
+          # 3. Third, insert data by call create_imdb def.
+          with conn:
+               imdb_select  = sd.read_imdb(conn, imdb[0])
+               if imdb_select == None:
+                    return sd.create_imdb(conn, imdb)
+               else:
+                    as_list = list(imdb_select)
+                    del as_list[len(as_list) - 2]
+                    as_list[len(as_list) - 1] = datetime.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
+                    return sd.update_imdb(conn, tuple(as_list))
