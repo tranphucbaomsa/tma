@@ -2,9 +2,11 @@
 # import ScrapingNonSelenium and ScrapingSelenium class in business_processor\scraping_process.py
 # import EnumStatusCode class in utilities\app_enum.py
 # import EnglishLocalizer and VietnameseLocalizer class in utilities\language_localize.py
+# import PathLibOperation class in utilities\CrawlerLibrary.py
 from business_processor.scraping_process import ScrapingNonSelenium, ScrapingSelenium
 from utilities.app_enum import EnumMainOptions
 from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
+from utilities.CrawlerLibrary import PathLibOperation
 
 """
 -----// begin private member function: can access within the class only //-----
@@ -27,6 +29,7 @@ def __let_user_input_path(vi):
     path = input(vi.localize("enter_path"))
     try:
         if path:
+           
             return path
     except:
         pass
@@ -54,21 +57,26 @@ def main():
     csv_path = __let_user_input_path(vi) # returns string (Ex: D:\ExportDocument)
 
     if csv_path != None:
-        # tmp_code: options = ["Scraping Without Selenium.", "Scraping With Selenium."]
-        # convert the enum object [EnumMainOptions] to a list [options]
-        options = [name for name in dir(EnumMainOptions) if not name.startswith('_')]
-        choice = __let_user_pick(options, vi) # returns integer
+        isValid = PathLibOperation.getInstance().check_valid_dir_names(csv_path)
 
-        if choice == 1:
-            sns = ScrapingNonSelenium(csv_path)
-            sns.scrapWebsite()
-        elif choice == 2:
-            ss = ScrapingSelenium(csv_path)
-            ss.scrapWebsite()
+        if isValid:
+            # tmp_code: options = ["Scraping Without Selenium.", "Scraping With Selenium."]
+            # convert the enum object [EnumMainOptions] to a list [options]
+            options = [name for name in dir(EnumMainOptions) if not name.startswith('_')]
+            choice = __let_user_pick(options, vi) # returns integer
+
+            if choice == 1:
+                sns = ScrapingNonSelenium(csv_path)
+                sns.scrapWebsite()
+            elif choice == 2:
+                ss = ScrapingSelenium(csv_path)
+                ss.scrapWebsite()
+            else:
+                print(vi.localize("choose_nothing"))
         else:
-            print(vi.localize("choose_nothing"))
+            print(vi.localize("please_enter_valid_path"))
     else:
-         print(vi.localize("enter_csv_path_first"))
+        print(vi.localize("enter_csv_path_first"))
 
     print('\n')
     print('-------WebScraping process finish.---------')

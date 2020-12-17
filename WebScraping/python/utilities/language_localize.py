@@ -7,6 +7,7 @@ class VietnameseLocalizer:
     def __init__(self): 
         self.translations = {
             "enter_path": "Vui lòng nhập đường dẫn sẽ chứa tệp csv (Vd: D:\ExportDocument): ", 
+            "please_enter_valid_path":"Vui lòng nhập đường dẫn hợp lệ",
             "please_choose": "Vui lòng chọn: ", 
             "enter_number": "Nhập số: ",
             "choose_nothing":"Bạn chưa chọn gì cả",
@@ -22,6 +23,7 @@ class EnglishLocalizer:
     def __init__(self): 
         self.translations = {
             "enter_path": "Please enter path will contain csv file (Ex: D:\ExportDocument): ", 
+            "please_enter_valid_path":"Please enter valid path",
             "please_choose": "Please choose: ", 
             "enter_number":"Enter number: ",
             "choose_nothing":"You choose nothing",

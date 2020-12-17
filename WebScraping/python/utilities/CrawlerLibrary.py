@@ -97,7 +97,8 @@ class CrawlerOperation:
             if len(movie.findAll(tag, class_)) > 1:
                 to_extract = movie.findAll(tag, class_)[order]['data-value']
             else:
-                to_extract = None
+                # to_extract = None
+                to_extract = ''
         else:
             to_extract = movie.find(tag, class_)['data-value']
         return to_extract
@@ -123,7 +124,8 @@ class CrawlerOperation:
         if movie.find(tag, class_):
             return movie.find(tag, class_).text.strip()
         else:
-            return
+            # return 
+            return ''
 
     # extract numerical values from movie item
     def __order_text_value(self, 
@@ -135,7 +137,8 @@ class CrawlerOperation:
             if len(movie.findAll(tag, class_)) > 1:
                 to_extract = movie.findAll(tag, class_)[order].text
             else:
-                to_extract = None
+                # to_extract = None
+                to_extract = ''
         else:
             to_extract = movie.find(tag, class_).text
         return to_extract.strip() # strip(): removing any leading and trailing whitespaces including tabs (\t)
@@ -205,6 +208,33 @@ class DateTimeOperation:
         min = sec // 60
         sec %= 60
         return "%dh %02dmin" % (hour, min) 
+
+class PathLibOperation:
+    __instance = None
+
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if PathLibOperation.__instance == None:
+         PathLibOperation()
+      return PathLibOperation.__instance
+
+    def __init__(self):  # init method or constructor   
+        # Virtually private constructor.
+        if PathLibOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            PathLibOperation.__instance = self
+
+    # input path could be a valid directory
+    def check_valid_dir_names(self, path):
+        if not os.path.exists(os.path.dirname(path)):
+            return False
+        else:
+            return True
+            # os.makedirs(os.path.dirname(path))
+    
+
 
 # get error message from status code
 def response_message(status_code):

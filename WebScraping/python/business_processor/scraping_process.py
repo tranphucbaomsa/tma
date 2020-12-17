@@ -16,7 +16,7 @@ from selenium.common.exceptions import NoSuchElementException
 import re  # Regular expression operations
 from bs4 import BeautifulSoup
 import pandas as pd
-import datetime
+import datetime as dt
 
 # super class 
 class BaseScraping: 
@@ -49,6 +49,7 @@ class ScrapingNonSelenium(BaseScraping):
      __csvOperation = None
      __dtOperation = None
      __businessOperation = None
+     __result = None
 
      # constructor  
      def __init__(self, csvPath):
@@ -70,7 +71,8 @@ class ScrapingNonSelenium(BaseScraping):
 
           # accessing protected data members of super class  
           base_url = self._url
-          next_link = '/search/title/?groups=top_1000&count=250&start=1&sort=user_rating,desc'
+          # tmp_code: next_link = '/search/title/?groups=top_1000&count=250&start=1&sort=user_rating,desc'
+          next_link = '/search/title/?groups=top_250&count=50&start=1&sort=user_rating,desc&certificates=US%3AG,US%3APG,US%3APG-13,US%3AR'
           next_href = []
 
           w.register('chrome',
@@ -82,186 +84,200 @@ class ScrapingNonSelenium(BaseScraping):
           next_href.append(next_link)
 
           # Let’s connect to the first page of IMDB website (for 1000 movies)
-          result =  self.__crawlerOperation.get_page_contents(base_url + next_link)
+          __result =  self.__crawlerOperation.get_page_contents(base_url + next_link)
 
           # Let’s connect to the next page of IMDB website and get next link if exist
           # Break to the loop even if the next href is gone:
-          while result != None:
-               class_next_page = result.find('a', {'class': 'lister-page-next next-page'})
+          while __result != None:
+               class_next_page = __result.find('a', {'class': 'lister-page-next next-page'})
 
                if class_next_page != None:
                     next_link = class_next_page.get('href')
-                    result =  self.__crawlerOperation.get_page_contents(base_url + next_link)
+                    __result =  self.__crawlerOperation.get_page_contents(base_url + next_link)
                     next_href.append(next_link)
                else:
                     break
 
-          imdb = []
-          key_item = ''
-          title_item = ''
-          release_item = ''
-          audience_rating_item = ''
-          runtime_item = ''
-          genre_item = '' 
-          imdb_rating_item = ''
-          vote_item = '' 
-          director_item = ''
-          actor_item = ''
-          desc_item = ''
-          now = ''
+          # imdb = []
+          # key_item = ''
+          # title_item = ''
+          # release_item = ''
+          # audience_rating_item = ''
+          # runtime_item = ''
+          # genre_item = '' 
+          # imdb_rating_item = ''
+          # vote_item = '' 
+          # director_item = ''
+          # actor_item = ''
+          # desc_item = ''
+          # now = ''
+
+          __result = None
          
           for item_next_href in next_href:   # Get each item in a next_href list:
-               imdb.clear()
-
                index = next_href.index(item_next_href)
 
                print('\n')
                print('1. Request-Response from %s' % base_url + item_next_href)
-               result =  self.__crawlerOperation.get_page_contents(base_url + item_next_href)
+               __result =  self.__crawlerOperation.get_page_contents(base_url + item_next_href)
                
-               # open current link in chrome browser
-               chrome.open(base_url + item_next_href, 
-                         new=0, 
-                         autoraise=True)
-               time.sleep(1)
-          
-               print('2. Parse and Extract title, release, rating, votes,... from imdb website')
-               # We can get a list of all distinct movies and their corresponding HTML by
-               movies = result.findAll('div',
-                                        class_='lister-item-content')
-
-               # we can construct a list of all movie titles
-               titlesTemp =  self.__crawlerOperation.extract_attribute(movies,
-                                                       'a')
-
-               # Release years can be found under the tag span and class lister-item-year text-muted unbold
-               # found in <span class="lister-item-year text-muted unbold">(2020)</span>
-               release = self.__crawlerOperation.extract_attribute(movies,
-                                                       'span',
-                                                       'lister-item-year text-muted unbold')
+               if __result != None:
+                    # open current link in chrome browser
+                    chrome.open(base_url + item_next_href, 
+                              new=0, 
+                              autoraise=True)
+                    time.sleep(1)
                
-               titles = []
-               for i in range(len(titlesTemp)):
-                    titles.append(titlesTemp[i] + ' ' + release[i])
+                    print('2. Parse and Extract title, release, rating, votes,... from imdb website')
+                    # We can get a list of all distinct movies and their corresponding HTML by
+                    movies = __result.findAll('div',
+                                             class_='lister-item-content')
 
-               # Audience rating can be found under the tag span and class certificate
-               # found in <span class="certificate">TV-MA</span>
-               audience_rating = self.__crawlerOperation.extract_attribute(movies,
-                                                                 'span',
-                                                                 'certificate')
+                    # we can construct a list of all movie titles
+                    titlesTemp =  self.__crawlerOperation.extract_attribute(movies,
+                                                            'a')
 
-               # Runtime can be found under the tag span and class runtime
-               # found in <span class="runtime">153 min</span>
-               runtimeTemp = self.__crawlerOperation.extract_attribute(movies,
-                                                       'span',
-                                                       'runtime')
-              
-               runtime = []
-               for itemRuntime in runtimeTemp:
-                    itemRuntime = itemRuntime.replace('min', '')
-                    runtime.append(self.__dtOperation.convert_time_to_preferred_format(int(itemRuntime)))
+                    # Release years can be found under the tag span and class lister-item-year text-muted unbold
+                    # found in <span class="lister-item-year text-muted unbold">(2020)</span>
+                    release = self.__crawlerOperation.extract_attribute(movies,
+                                                            'span',
+                                                            'lister-item-year text-muted unbold')
+                    
+                    titles = []
+                    for i in range(len(titlesTemp)):
+                         titles.append(titlesTemp[i] + ' ' + release[i])
 
-               # Genre can be found under the tag span and class genre
-               # found in <span class="genre">Drama</span>
-               genre = self.__crawlerOperation.extract_attribute(movies,
-                                                       'span',
-                                                       'genre')
+                    keys = []
+                    for j in range(len(titles)):
+                         keys.append(re.sub("[^a-zA-Z0-9]", "", titles[j]))
 
-               # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
-               # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
-               imdb_rating = self.__crawlerOperation.extract_attribute(movies,
-                                                            'div',
-                                                            'inline-block ratings-imdb-rating',
-                                                            text_attribute=False)
+                    # Audience rating can be found under the tag span and class certificate
+                    # found in <span class="certificate">TV-MA</span>
+                    audience_rating = self.__crawlerOperation.extract_attribute(movies,
+                                                                      'span',
+                                                                      'certificate')
 
-               # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
-               # found in <span name="nv" data-value="47467">47,467</span>
-               votes = self.__crawlerOperation.extract_attribute(movies,
-                                                       'span' ,
-                                                       {'name' : 'nv'},
-                                                       text_attribute=False,
-                                                       order=0)
-
+                    # Runtime can be found under the tag span and class runtime
+                    # found in <span class="runtime">153 min</span>
+                    runtimeTemp = self.__crawlerOperation.extract_attribute(movies,
+                                                            'span',
+                                                            'runtime')
                
+                    runtime = []
+                    for itemRuntime in runtimeTemp:
+                         itemRuntime = itemRuntime.replace('min', '')
+                         runtime.append(self.__dtOperation.convert_time_to_preferred_format(int(itemRuntime)))
 
-               # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
-               directors = self.__crawlerOperation.extract_attribute(movies,
+                    # Genre can be found under the tag span and class genre
+                    # found in <span class="genre">Drama</span>
+                    genre = self.__crawlerOperation.extract_attribute(movies,
+                                                            'span',
+                                                            'genre')
+
+                    # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
+                    # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
+                    imdb_rating = self.__crawlerOperation.extract_attribute(movies,
+                                                                 'div',
+                                                                 'inline-block ratings-imdb-rating',
+                                                                 text_attribute=False)
+
+                    # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
+                    # found in <span name="nv" data-value="47467">47,467</span>
+                    votes = self.__crawlerOperation.extract_attribute(movies,
+                                                            'span' ,
+                                                            {'name' : 'nv'},
+                                                            order=0,
+                                                            duplicated=True)
+
+                    
+
+                    # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
+                    directors = self.__crawlerOperation.extract_attribute(movies,
+                                                                 'p',
+                                                                 '',
+                                                                 'a',
+                                                                 '',
+                                                                 text_attribute=True,
+                                                                 order=0,
+                                                                 nested=True)
+
+                    # actors always correspond to the remaining a tags
+                    actorsTemp = self.__crawlerOperation.extract_attribute(movies,
                                                             'p',
                                                             '',
                                                             'a',
                                                             '',
                                                             text_attribute=True,
-                                                            order=0,
+                                                            order=slice(1, 5, None),
                                                             nested=True)
 
-               # actors always correspond to the remaining a tags
-               actors = self.__crawlerOperation.extract_attribute(movies,
-                                                       'p',
-                                                       '',
-                                                       'a',
-                                                       '',
-                                                       text_attribute=True,
-                                                       order=slice(1, 5, None),
-                                                       nested=True)
+                    actors = []
+                    for itemActor in actorsTemp:
+                         actors.append(itemActor.replace("[","").replace("]","").replace("'",""))
 
-               descriptions =  self.__crawlerOperation.extract_attribute(movies,
-                                                       'p',
-                                                       'text-muted',
-                                                       order=1,
-                                                       duplicated=True)
+                    descriptions =  self.__crawlerOperation.extract_attribute(movies,
+                                                            'p',
+                                                            'text-muted',
+                                                            order=1,
+                                                            duplicated=True)
 
-               # init dictionary
-               df_dict_imdb = {'Title': titles, 
-                              'Release': release, 
-                              'Audience_Rating': audience_rating,
-                              'Runtime': runtime, 
-                              'Genre': genre, 
-                              'Imdb_Rating': imdb_rating,
-                              'Votes': votes, 
-                              'Director': directors,
-                              'Actors': actors,
-                              'Desc': descriptions }
+                    # init dictionary
+                    df_dict_imdb = {'Key': keys,
+                                   'Title': titles, 
+                                   'Release': release, 
+                                   'Audience_Rating': audience_rating,
+                                   'Runtime': runtime, 
+                                   'Genre': genre, 
+                                   'Imdb_Rating': imdb_rating,
+                                   'Votes': votes, 
+                                   'Director': directors,
+                                   'Actors': actors,
+                                   'Desc': descriptions }
 
-               # export to multi csv file with header
-               print('3. Download data and export title, release, rating, votes,... to %s\imdb__nonselenium_%s.csv file' % (self._csvPath, str(index + 1)))
-               self.__csvOperation.export_csv("imdb_nonselenium_" + str(index + 1),
-                                        df_dict_imdb,
-                                        self._csvPath)
+                    # export to multi csv file with header
+                    print('3. Download data and export title, release, rating, votes,... to %s\imdb__nonselenium_%s.csv file' % (self._csvPath, str(index + 1)))
+                    self.__csvOperation.export_csv("imdb_nonselenium_" + str(index + 1),
+                                             df_dict_imdb,
+                                             self._csvPath)
 
-               for j in range(len(titles)):
-                    key_item = re.sub("[^a-zA-Z0-9]", "", titlesTemp[j])
-                    title_item = titles[j]
-                    release_item = release[j]
-                    audience_rating_item = audience_rating[j] 
-                    runtime_item =  runtime[j]
-                    genre_item =  genre[j]
-                    imdb_rating_item = imdb_rating[j] 
-                    vote_item = votes[j] 
-                    director_item = directors[j] 
-                    actor_item = actors[j] 
-                    desc_item = descriptions[j]
-                    now = datetime.datetime.now()
+                    print('4. Save imdb data into database')
+                    self.__businessOperation.insert_edit_scrapped_data_by_dict(df_dict_imdb, 
+                                                                                True if index == 0 else False)
 
-                    imdb.extend(
-                         [    key_item, 
-                              title_item, 
-                              release_item, 
-                              audience_rating_item, 
-                              runtime_item, 
-                              genre_item, 
-                              imdb_rating_item, 
-                              vote_item, 
-                              director_item, 
-                              actor_item, 
-                              desc_item.strip(),
-                              now.strftime(constant.SHORT_DATETIME_FORMAT),
-                              now.strftime(constant.SHORT_DATETIME_FORMAT) ]
-                    )
+                    # iterate over the list using index
+                    # for j in range(len(titles)):
+                    #      imdb.clear()
 
-                    
-               print('imdb key: %s' % imdb[0])
-               # print('4. Save imdb data into database')
-               # self.__businessOperation.insert_scrapped_data_by_list(imdb)
+                    #      key_item = re.sub("[^a-zA-Z0-9]", "", titles[j])
+                    #      title_item = titles[j]
+                    #      release_item = release[j] if release[j] != None else ''
+                    #      audience_rating_item = audience_rating[j] if audience_rating[j] != None else ''
+                    #      runtime_item = runtime[j] if runtime[j] != None else ''
+                    #      genre_item = genre[j] if genre[j] != None else '' 
+                    #      imdb_rating_item = imdb_rating[j] if imdb_rating[j] != None else ''
+                    #      vote_item = votes[j] if votes[j] != None else ''
+                    #      director_item = directors[j] if directors[j] != None else ''
+                    #      actor_item = actor_item.join(actors[j]) if actors[j] != None else ''
+                    #      # desc_item = descriptions[j] if descriptions[j] != None else ''
+                    #      now = dt.datetime.now()
+
+                    #      imdb.extend(
+                    #           [    key_item.strip(), 
+                    #                title_item.strip(), 
+                    #                release_item.strip(), 
+                    #                audience_rating_item.strip(), 
+                    #                runtime_item.strip(), 
+                    #                genre_item.strip(), 
+                    #                imdb_rating_item.strip(), 
+                    #                vote_item.strip(), 
+                    #                director_item.strip(), 
+                    #                actor_item.strip(), 
+                    #                # desc_item.strip(),
+                    #                now.strftime(constant.SHORT_DATETIME_FORMAT),
+                    #                now.strftime(constant.SHORT_DATETIME_FORMAT) ]
+                    #      )
+
+                    #      self.__businessOperation.insert_edit_scrapped_data_by_list(imdb)
 
 # derived class 
 class ScrapingSelenium(BaseScraping): 
@@ -306,6 +322,22 @@ class ScrapingSelenium(BaseScraping):
           #     if optionSearchCount.text == '100 per page':
           #         optionSearchCount.click() # select() in earlier versions of webdriver
           #         break
+
+          # set check in checkbox have "G" value
+          chkCertificates1 = driver.find_element_by_id('certificates-1') # US Certificates : G
+          chkCertificates1.click()
+
+           # set check in checkbox have "PG" value
+          chkCertificates2 = driver.find_element_by_id('certificates-2') # US Certificates : PG
+          chkCertificates2.click()
+
+           # set check in checkbox have "PG-13" value
+          chkCertificates3 = driver.find_element_by_id('certificates-3') # US Certificates : PG-13
+          chkCertificates3.click()
+
+           # set check in checkbox have "R" value
+          chkCertificates4 = driver.find_element_by_id('certificates-4') # US Certificates : R
+          chkCertificates4.click()
 
           ddlSort = driver.find_element_by_name('sort')
           for optionSort in ddlSort.find_elements_by_tag_name('option'):
@@ -388,13 +420,14 @@ class ScrapingSelenium(BaseScraping):
                     arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
 
                     # initialize an empty string 
-                    actor_item = "["
+                    actor_item = ""
                     # traverse in the string   
                     for actor in arrActor:  
                          indexActor = arrActor.index(actor)
                          if indexActor < len(arrActor) - 1:
-                              actor_item += "'" + actor.text + "'" + ("," if indexActor < len(arrActor) - 2 else "")
-                    actor_item += "]"
+                              # actor_item += "'" + actor.text + "'" + (", " if indexActor < len(arrActor) - 2 else "")
+                              actor_item += actor.text + (", " if indexActor < len(arrActor) - 2 else "")
+                    # actor_item += "]"
 
                     # title_item = re.sub("[^a-zA-Z0-9:' ]", "", title_item)
                     key_item = re.sub("[^a-zA-Z0-9]", "", title_item)
@@ -413,29 +446,29 @@ class ScrapingSelenium(BaseScraping):
                directors.append(director_item)
                actors.append(actor_item)
                descriptions.append(desc_item.strip())
-               now = datetime.datetime.now()
+               now = dt.datetime.now()
 
-               imdb.extend(
-                    [    key_item, 
-                         title_item.strip(), 
-                         release_item, 
-                         audience_rating_item, 
-                         runtime_item, 
-                         genre_item, 
-                         imdb_rating_item, 
-                         vote_item, 
-                         director_item, 
-                         actor_item, 
-                         desc_item.strip(),
-                         now.strftime(constant.SHORT_DATETIME_FORMAT),
-                         now.strftime(constant.SHORT_DATETIME_FORMAT) ]
-               )
+               # imdb.extend(
+               #      [    key_item, 
+               #           title_item.strip(), 
+               #           release_item, 
+               #           audience_rating_item, 
+               #           runtime_item, 
+               #           genre_item, 
+               #           imdb_rating_item, 
+               #           vote_item, 
+               #           director_item, 
+               #           actor_item, 
+               #           desc_item.strip(),
+               #           now.strftime(constant.SHORT_DATETIME_FORMAT),
+               #           now.strftime(constant.SHORT_DATETIME_FORMAT) ]
+               # )
 
-               self.__businessOperation.insert_scrapped_data_by_list(imdb)
+               # self.__businessOperation.insert_edit_scrapped_data_by_list(imdb)
                
-               # #Ask Selenium to click the back button
+               #Ask Selenium to click the back button
                driver.execute_script("window.history.go(-1)") 
-               # driver.back()
+               # tmp_code: driver.back()
                
                print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + currentSpan.findNext('a')["href"]))
                
@@ -452,7 +485,8 @@ class ScrapingSelenium(BaseScraping):
 
           #combine all pandas dataframes in the list into one big dataframe
           # init dictionary
-          df_dict_imdb = {'Title': titles, 
+          df_dict_imdb = {'Key': keys,
+                              'Title': titles, 
                               'Release': releases, 
                               'Audience_Rating': audience_ratings,
                               'Runtime': runtimes, 
@@ -469,6 +503,9 @@ class ScrapingSelenium(BaseScraping):
                                              df_dict_imdb,
                                              self._csvPath) 
           
+          print('5. Save imdb data into database')
+          self.__businessOperation.insert_edit_scrapped_data_by_dict(df_dict_imdb, 
+                                                                      True)
 
 
 class BusinessOperation:
@@ -488,24 +525,26 @@ class BusinessOperation:
           else:
                BusinessOperation.__instance = self
 
-     def insert_scrapped_data_by_dict(self, 
-                                        df_dict):
+     def insert_edit_scrapped_data_by_dict(self, 
+                                        df_dict, 
+                                        isClearAll):
           # init method or constructor                          
           sd = StoringData.getInstance()
 
           # 1. First, connect to the SQLite database by creating a Connection object
           conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
 
-          # 2.Second, create a Cursor object by calling the cursor method of the Connection object.
-          cur = conn.cursor()
-
-          # 3. Third, insert data by dataframe.
+          # 2. Second, insert data by dataframe.
           with conn:
+               if isClearAll:
+                    sd.delete_all_imdb(conn)
                read_clients = pd.DataFrame(df_dict)  # We use pandas to visualize the data
                read_clients.to_sql('IMDb', conn, if_exists='append', index = False) # Insert the values from the dataframe into the table 'IMDb' 
 
+          sd.close_connection(conn)
 
-     def insert_scrapped_data_by_list(self, 
+
+     def insert_edit_scrapped_data_by_list(self, 
                                         imdb):
           # 1. First, init method or constructor                          
           sd = StoringData.getInstance()
@@ -519,7 +558,10 @@ class BusinessOperation:
                if imdb_select == None:
                     return sd.create_imdb(conn, imdb)
                else:
-                    as_list = list(imdb_select)
+                    as_list = list(imdb)
                     del as_list[len(as_list) - 2]
-                    as_list[len(as_list) - 1] = datetime.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
+                    as_list[len(as_list) - 1] = dt.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
+                    as_list.insert(0, imdb_select[0])
                     return sd.update_imdb(conn, tuple(as_list))
+
+          sd.close_connection(conn)
