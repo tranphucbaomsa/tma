@@ -70,7 +70,10 @@ class CrawlerOperation:
     def get_page_contents(self, url):
         soap = None
         try:
-            page = requests.get(url, headers={"Accept-Language": "en-US"})
+            custom_header = {"Accept-Language": "en-US", 
+                            "Content-Type": "text/html; charset=utf-8",
+                            "Connection": "keep-alive"}
+            page = requests.get(url, headers=custom_header)
             if page.status_code == constant.STATUS_OK:
                 soap = bs4.BeautifulSoup(page.text, 
                                             "html.parser")
@@ -165,7 +168,7 @@ class CsvOperation:
             CsvOperation.__instance = self
 
     """
-    -----// end public member function: easily accessible from any part of the program //-----
+    -----// begin public member function: easily accessible from any part of the program //-----
     """
     # extracting all the information we need an turning it into a clean pandas data frame
     # export data frame to csv format

@@ -13,6 +13,7 @@ CHROME_EXECUTABLE_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\
 CHROME_DRIVER_PATH = r"\WebScraping\python\libs\chromedriver.exe"
 DB_FILE_PATH = r'\WebScraping\python\db\imdb_sqlite.db'
 SHORT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+IMDB_KEY_EXPRESSION = "[^a-zA-Z0-9]"
 """ ---- end text constant ---- """
 
 
