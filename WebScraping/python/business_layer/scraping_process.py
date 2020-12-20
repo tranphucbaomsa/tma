@@ -86,7 +86,7 @@ class BaseScraping:
                director_item = directors[j] 
                actor_item = actors[j]
                desc_item = descriptions[j] 
-               __now = str(dt.datetime.now()).strftime(constant.SHORT_DATETIME_FORMAT)
+               __now = dt.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
 
                __imdb.clear()
                __imdb.extend(
@@ -176,7 +176,6 @@ class ScrapingNonSelenium(BaseScraping):
                     chrome.open(base_url + item_next_href, 
                               new=0, 
                               autoraise=True)
-                    time.sleep(1)
                
                     print('2. Parse and Extract title, release, rating, votes,... from imdb website')
                     # We can get a list of all distinct movies and their corresponding HTML by
@@ -333,7 +332,7 @@ class ScrapingSelenium(BaseScraping):
           # create a new Chrome session
           driver = webdriver.Chrome(executable_path=self._driverPath, options=options)
           
-          driver.implicitly_wait(30)
+          # driver.implicitly_wait(5)
           driver.get(launchUrl)
 
           # set check in checkbox have "IMDb Top 100" value
