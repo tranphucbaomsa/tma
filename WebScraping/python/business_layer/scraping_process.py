@@ -467,8 +467,9 @@ class ScrapingSelenium(BaseScraping):
                               'Actors': actors,
                               'Desc': descriptions }
 
-          # export to single csv file with header
+          
           print('4. Download data and export title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
+          # export to single csv file with header
           self.__csvOperation.export_csv("imdb_selenium",
                                              df_dict_imdb,
                                              self._csvPath) 
