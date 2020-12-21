@@ -43,6 +43,7 @@ class CrawlerOperation:
     # earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
     # director = movie.find('p').find('a').text
     # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
+    # descriptions = movie.findAll('p' , {'class' : 'text-muted'})[1].text
     def extract_attribute(self, 
                             movies, 
                             tag_1, 
@@ -130,7 +131,7 @@ class CrawlerOperation:
             # return 
             return ''
 
-    # extract numerical values from movie item
+    # extract text in tag with order from movie item
     def __order_text_value(self, 
                         movie, 
                         tag, 
