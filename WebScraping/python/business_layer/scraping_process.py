@@ -417,11 +417,10 @@ class ScrapingSelenium(BaseScraping):
                     divRatingValue = divImdbRating.find_element_by_css_selector('div.ratingValue')
                     imdb_ratings.append(divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span').text if divRatingValue.find_element_by_tag_name('strong').find_element_by_tag_name('span') != None else ""   )
                     votes.append(divImdbRating.find_element_by_css_selector('a span.small').text if divImdbRating.find_element_by_css_selector('a span.small') != None else "")
-                    descriptions.append(driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]').text.strip() if driver.find_element_by_xpath('//div[@class="ipc-html-content ipc-html-content--base"]') != None else "")
-
+                    
                     divPlotSummary = driver.find_element_by_css_selector('div.plot_summary')
                     divCreditSummaryItem =  divPlotSummary.find_elements_by_css_selector('div.credit_summary_item')
-                    directors.append(divCreditSummaryItem[0].find_element_by_css_selector('a').text if divCreditSummaryItem[0].find_element_by_css_selector('a') != None else "" )
+                    directors.append(divCreditSummaryItem[0].find_element_by_css_selector('a').text)
                     arrActor  = divCreditSummaryItem[2].find_elements_by_css_selector('a')
 
                     # initialize an empty string 
@@ -432,8 +431,9 @@ class ScrapingSelenium(BaseScraping):
                          if indexActor < len(arrActor) - 1:
                               # actor_item += "'" + actor.text + "'" + (", " if indexActor < len(arrActor) - 2 else "")
                               actor_item += actor.text + (", " if indexActor < len(arrActor) - 2 else "")
-
                     actors.append(actor_item)
+
+                    descriptions.append(driver.find_element_by_css_selector('div.ipc-html-content').text.strip())
                except NoSuchElementException:
                     pass
 
