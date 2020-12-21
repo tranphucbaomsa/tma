@@ -31,9 +31,27 @@ pip install beautifulsoup4 requests pandas
 * requests: The package that allows us to connect the site of choice.
 * pandas: The goto Python package for dataset manipulation  
 
+## Folder Structure
+
+> Folder structure options and naming conventions for python projects
+
+### A typical top-level directory layout
+
+    .
+    ├── build                   # Compiled files (alternatively `dist`)
+    ├── docs                    # Documentation files (alternatively `doc`)
+    ├── src                     # Source files (alternatively `lib` or `app`)
+    ├── test                    # Automated tests (alternatively `spec` or `tests`)
+    ├── tools                   # Tools and utilities
+    ├── LICENSE
+    └── README.md
+
+> Use short lowercase names at least for the top-level files and folders except
+> `LICENSE`, `README.md`
+
 ### Documentation
 
-We have 2 file in project:
+We have structure in project:
 
 * CrawlerLibrary.py: This is a library file for scraping website.
 * main.py: This is the main file of the program using the library file (CrawlerLibrary.py)
@@ -70,4 +88,5 @@ The top 100 movies will show as:
 *  Miscellaneous operating system interfaces:  https://docs.python.org/3/library/os.html
 *  Common pathname manipulations:  https://docs.python.org/3/library/os.path.html
 *  Modules in Python 3:  https://www.digitalocean.com/community/tutorials/how-to-import-modules-in-python-3
+*  DB-API 2.0 interface for SQLite databases: https://docs.python.org/3/library/sqlite3.html
 
