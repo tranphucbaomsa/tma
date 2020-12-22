@@ -10,7 +10,7 @@ For this tutorial on web scraping we’ll go ahead and create a dataset from the
 
 ![Image of Yaktocat](https://miro.medium.com/max/700/1*i0pULjJvx7wtnvFcUGMGKA.png)
 
-### Prerequisites
+## Prerequisites
 
 Before working on this tutorial, you should have a local or server-based Python programming environment set up on your machine (https://www.python.org/).
 
@@ -31,39 +31,82 @@ pip install beautifulsoup4 requests pandas
 * requests: The package that allows us to connect the site of choice.
 * pandas: The goto Python package for dataset manipulation  
 
-## Folder Structure
+## Source Folder Structure
 
 > Folder structure options and naming conventions for python projects
 
 ### A typical top-level directory layout
-
     .
-    ├── build                   # Compiled files (alternatively `dist`)
-    ├── docs                    # Documentation files (alternatively `doc`)
-    ├── src                     # Source files (alternatively `lib` or `app`)
-    ├── test                    # Automated tests (alternatively `spec` or `tests`)
-    ├── tools                   # Tools and utilities
     ├── business_layer          # the functional business logic. It will act as a bridge of communication for the presentation_layer and data_layer
     ├── data_layer              # comprises of the database/data storage system and data access layer
     ├── db                      # this folder contain database file (sqlite, access,...)
     ├── libs                    # this folder contain extension or tools for run application
     ├── presentation_layer      # the front end layer. The user will interact with to access the features of our application
-    ├── utilities               # utilities
-    ├── LICENSE
+    ├── utilities               # contains classes and funtions of general utility used in multiple places
+    ├── venv                    # an isolated environment for Python projects
+    ├── main.py                 # the name of the scope in which top-level code executes
+    ├── LICENSE 
     ├── debug.log
     └── README.md
-
-
 
 > Use short lowercase names at least for the top-level files and folders except
 > `LICENSE`, `README.md`
 
+### Business Logic Layer
+    .
+    ├── ...
+    ├── business_layer                  # Test files (alternatively `spec` or `tests`)
+    │   ├── scraping_process.py         # Load and stress tests
+    └── ...
+    
+### Data Access Layer
+    .
+    ├── ...
+    ├── data_layer                      # Test files (alternatively `spec` or `tests`)
+    │   ├── sqlite_process.py           # Load and stress tests
+    └── ...
+    
+### DB
+    .
+    ├── ...
+    ├── db                              # Test files (alternatively `spec` or `tests`)
+    │   ├── imdb_sqlite.db              # Load and stress tests
+    └── ...
+    
+### Library
+    .
+    ├── ...
+    ├── libs                            # Test files (alternatively `spec` or `tests`)
+    │   ├── chromedriver.exe            # Load and stress tests
+    └── ...
+    
+### Presentation (GUI) Layer
+    .
+    ├── ...
+    ├── presentation_layer              # Test files (alternatively `spec` or `tests`)
+    │   ├── client_app.py               # Load and stress tests
+    └── ...
+    
+### Utilities
+    .
+    ├── ...
+    ├── utilities                       # Test files (alternatively `spec` or `tests`)
+    │   ├── client_app.py               # Load and stress tests
+    └── ...
+    
+### Python Virtual Environments
+    .
+    ├── ...
+    ├── venv                            # Test files (alternatively `spec` or `tests`)
+    │   ├── Include                     # Load and stress tests
+    │   ├── Lib\site-packages           # Load and stress tests
+    │   ├── Scripts                     # Load and stress tests
+    │   ├── pyvenv.cfg                  # Load and stress tests
+    └── ...
+    
+    
+
 ### Documentation
-
-We have structure in project:
-
-* CrawlerLibrary.py: This is a library file for scraping website.
-* main.py: This is the main file of the program using the library file (CrawlerLibrary.py)
     
 After taking a look at the IMDB webpage, we’ll set out to extract (all highlighted in the above screenshot of the page):
 
@@ -77,13 +120,6 @@ After taking a look at the IMDB webpage, we’ll set out to extract (all highlig
 *  Director
 *  Primary actors
 *  Description
-
-## Running the code
-
-The top 100 movies will show as:
-
-![Image of Yaktocat](https://miro.medium.com/max/700/1*pdpHtgtksNsh6gV0x4LIQQ.png)
-
 
 ## Reference
 
