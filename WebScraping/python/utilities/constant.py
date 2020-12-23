@@ -1,5 +1,6 @@
 """ ---- begin number constant ---- """
 STATUS_OK = 200
+CONNECTION_ABORTED = 10054
 REFRESH_TIME_IN_SECONDS = 5
 """ ---- end number constant ---- """
 

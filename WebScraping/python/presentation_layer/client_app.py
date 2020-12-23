@@ -72,7 +72,7 @@ class ViewOperation:
         vi = self.__LanguageTranslation("vi")
         pathLibOperation  = PathLibOperation.getInstance()
 
-        print('-------WebScraping process start.---------')
+        print(vi.localize("app_title_start"))
         print('\n')
 
         csv_path = self.__let_user_input_path(vi) # returns string (Ex: D:\ExportDocument)
@@ -100,7 +100,7 @@ class ViewOperation:
             print(vi.localize("enter_csv_path_first"))
 
         print('\n')
-        print('-------WebScraping process finish.---------')
+        print(vi.localize("app_title_finish"))
     """
     -----// end public member function: easily accessible from any part of the program //-----
     """

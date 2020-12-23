@@ -107,13 +107,14 @@ class StoringData:
     def create_multi_imdb(self, conn, imdbs):
         result = 0
         try:
+            # , Desc, Created_On, Modified_On
             sql_insert_query = ''' INSERT INTO IMDb
                                     (
-                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors, Desc, Created_On, Modified_On
+                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors
                                     )
                                     VALUES
                                     (
-                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                                     );
                                 '''
             # create a Cursor object by calling the cursor method of the Connection object.

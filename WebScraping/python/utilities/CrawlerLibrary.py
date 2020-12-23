@@ -53,7 +53,8 @@ class CrawlerOperation:
                             text_attribute=True, 
                             order=None, 
                             nested=False,
-                            duplicated=False):        
+                            duplicated=False,
+                            href_attribute=False):        
         data_list = []
         for movie in movies:
             if text_attribute:
@@ -61,6 +62,8 @@ class CrawlerOperation:
                     data_list.append(self.__nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
                 elif duplicated:  # Extracting same class: description
                     data_list.append(self.__order_text_value(movie, tag_1, class_1, order))
+                elif href_attribute:  # Extracting same class: description
+                    data_list.append(self.__href_value(movie, tag_1, class_1))
                 else:  # Extracting text: titles and release year
                     data_list.append(self.__text_value(movie, tag_1, class_1))
             else:  # Extracting Numerical Values: imdb_rating  
@@ -70,20 +73,26 @@ class CrawlerOperation:
     # Connect to the webpage, extract the HTML behind it and convert it to a BeautifulSoup object
     def get_page_contents(self, url):
         soap = None
+        response = None
         try:
-            custom_header = {"Accept-Language": "en-US", 
-                            "Content-Type": "text/html; charset=utf-8",
-                            "Connection": "keep-alive"}
-            page = requests.get(url, headers=custom_header)
-            if page.status_code == constant.STATUS_OK:
-                soap = bs4.BeautifulSoup(page.text, 
-                                            "html.parser")
-            else:
-                # tmp_code: page.raise_for_status()
-                print(response_message(page.status_code))
+            soap = self.__request_url(url)
         except Exception as ex:
             print('There was a problem: %s' % (ex)) 
         return soap
+
+    def __request_url(self, base_url):
+        custom_header = {"Accept-Language": "en-US", 
+                            "Content-Type": "text/html; charset=utf-8",
+                            "Connection": "keep-alive"}
+        sub_response = requests.get(base_url, headers=custom_header)
+        if sub_response.status_code == constant.STATUS_OK:
+            return bs4.BeautifulSoup(sub_response.text, 
+                                        "html.parser")
+        else:
+            # tmp_code: page.raise_for_status()
+            print(response_message(sub_response.status_code))
+            None
+
     """
     -----// end public member function: easily accessible from any part of the program //-----
     """
@@ -129,6 +138,19 @@ class CrawlerOperation:
             return movie.find(tag, class_).text.strip()
         else:
             # return 
+            return ''
+
+    # extract href values from movie item
+    def __href_value(self, 
+                    movie, 
+                    tag, 
+                    class_=None):   
+        if movie.find(tag, class_):
+            # return movie.find(tag, class_).get('href')
+            hrefs = movie.find(tag, class_).findAll('a',href=True)
+            for href in hrefs:
+                return href
+        else:
             return ''
 
     # extract text in tag with order from movie item

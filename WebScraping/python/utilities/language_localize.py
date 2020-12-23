@@ -6,6 +6,8 @@ class VietnameseLocalizer:
     # it simply returns the vietnamese version
     def __init__(self): 
         self.translations = {
+            "app_title_start": "------- Quá trình Selenium Web Scraping bắt đầu ---------",
+            "app_title_finish": "------- Quá trình Selenium WebScraping kết thúc ---------",
             "enter_path": "Vui lòng nhập đường dẫn sẽ chứa tệp csv (Vd: D:\ExportDocument): ", 
             "please_enter_valid_path":"Vui lòng nhập đường dẫn hợp lệ",
             "please_choose": "Vui lòng chọn: ", 
@@ -22,6 +24,8 @@ class EnglishLocalizer:
     # it simply returns the english version
     def __init__(self): 
         self.translations = {
+            "app_title_start": "------- Selenium WebScraping process start ---------",
+            "app_title_finish": "------- Selenium WebScraping process finish ---------",
             "enter_path": "Please enter path will contain csv file (Ex: D:\ExportDocument): ", 
             "please_enter_valid_path":"Please enter valid path",
             "please_choose": "Please choose: ", 
