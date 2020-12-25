@@ -12,7 +12,7 @@ class VietnameseLocalizer:
             "please_enter_valid_path":"Vui lòng nhập đường dẫn hợp lệ",
             "please_choose": "Vui lòng chọn: ", 
             "enter_number": "Nhập số: ",
-            "choose_nothing":"Bạn chưa chọn gì cả",
+            "choose_nothing":"Bạn chưa chọn gì cả hoặc bạn đã chọn sai",
             "enter_csv_path_first":"Vui lòng nhập đường dẫn sẽ lưu csv trước"
             } 
   
@@ -30,7 +30,7 @@ class EnglishLocalizer:
             "please_enter_valid_path":"Please enter valid path",
             "please_choose": "Please choose: ", 
             "enter_number":"Enter number: ",
-            "choose_nothing":"You choose nothing",
+            "choose_nothing":"You choose nothing or you already choose wrong",
             "enter_csv_path_first":"Please enter csv path first"
             }
 

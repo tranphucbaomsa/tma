@@ -1,7 +1,7 @@
 # import CrawlerOperation, CsvOperation, DateTimeOperation class in CrawlerLibrary.py
 # import StoringData class in sqlite_process.py 
 # import constant
-from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation 
+from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation, ExportOperation 
 from data_layer.sqlite_process import StoringData
 from utilities import constant
 
@@ -13,20 +13,29 @@ from os import path
 import time
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import re  # Regular expression operations
 from bs4 import BeautifulSoup
 import pandas as pd
 import datetime as dt
+# using defaultdict 
+from collections import defaultdict 
 
 # super class 
 class BaseScraping: 
-     # private data members 
+     # protected data members: can access by derived class
      _url = ""
      _csvPath = ""
      _driverPath = ""
 
-     # protected data members 
+     # private data members: can access within the class only
      __businessOperation = None
+     __exportOperation = None
+     __crawlerOperation = None
+     __dtOperation = None
+
      __imdb = None
      __key_item = ""
      __title_item = ""
@@ -40,27 +49,221 @@ class BaseScraping:
      __actor_item = ""
      __desc_item = ""
      __now = ""
-     
+
+     keys = None
+     titles = None
+     releases = None
+     audience_ratings = None
+     runtimes = None
+     genres = None 
+     imdb_ratings = None
+     votes = None 
+     directors = None
+     actors = None
+     descriptions = None
+
      # constructor 
      def __init__(self, csvPath):   
           self._url = "https://www.imdb.com" 
           self._csvPath = csvPath 
           self.__businessOperation = BusinessOperation.getInstance()  # Object singleton instantiation of BusinessOperation class
+          self.__exportOperation = ExportOperation.getInstance()  # Object singleton instantiation of BusinessOperation class
+          self.__crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
+          self.__dtOperation = DateTimeOperation.getInstance()  # Object singleton instantiation of DateTimeOperation class
 
-     # private member function
+     """
+     -----// begin private member function: can access functions by derived class //-----
+     """
+     def __initProperties(self):
+          __df_dict_imdb = defaultdict(list)
+
+     def __export_to_file(self, 
+                              # df_dict_imdb=None, 
+                              filename="imdb", 
+                              extension="csv"):
+          #combine all pandas dataframes in the list into one big dataframe
+          # init dictionary
+          df_dict_imdb = { 'Title': self.titles, 
+                              'Release': self.releases, 
+                              'Audience_Rating': self.audience_ratings,
+                              'Runtime': self.runtimes, 
+                              'Genre': self.genres, 
+                              'Imdb_Rating': self.imdb_ratings,
+                              'Votes': self.votes, 
+                              'Director': self.directors,
+                              'Actors': self.actors,
+                              'Descriptions': self.descriptions }
+                              
+          # export to single csv file with header
+          self.__exportOperation.export_data_to_file(df_dict_imdb,
+                                                       self._csvPath,
+                                                       filename,
+                                                       extension) 
+     """
+     -----// end private member function: can access functions by derived class //-----
+     """
+
+     """
+     -----// begin protected member function: can access within the class only //-----
+     """
      def _getDriverPath(self):
          return self._driverPath
 
-     # private member function
      def _setDriverPath(self, value):
          self._driverPath = value
 
-     # public member function  
-     def scrapWebsite(self): 
-          print('This is base scraping')  
+     def _initFirefoxWebDriver(self): 
+          # accessing protected member functions of super class 
+          # os.getcwd(): get current working directory
+          _driverPath = os.getcwd() + constant.FIREFOX_GOCKO_DRIVER_PATH
+          # Define Firefox options to open the window in maximized mode
+          options = webdriver.FirefoxOptions()
+          options.add_argument("--start-maximized")
+          # the instance of Firefox WebDriver is created
+          driver = webdriver.Firefox(executable_path=_driverPath, options=options)
+          return driver
 
-     # public member function  
-     def saveIMDbData(self,
+     def _initChromeWebDriver(self): 
+          # accessing protected member functions of super class 
+          # os.getcwd(): get current working directory
+          _driverPath = os.getcwd() + constant.CHROME_DRIVER_PATH
+          # Define Chrome options to open the window in maximized mode
+          options = webdriver.ChromeOptions()
+          # options.headless = True # hide browser
+          options.add_argument("--start-maximized")
+          # create a new Chrome session
+          driver = webdriver.Chrome(executable_path=_driverPath, options=options)
+          return driver
+
+     def _extract_export_html(self, 
+                              html_page_source,
+                              filename,
+                              extension):
+          # soup_list_source: use for parse and extract purpose from html.parser
+          soup_list_source = BeautifulSoup(html_page_source, 
+                                             "html.parser")
+
+          # We can get a list of all distinct movies and their corresponding HTML by
+          movies = soup_list_source.findAll('div',
+                                             class_='lister-item-content')
+
+          # we can construct a list of all movie keys
+          keysTmp =  self.__crawlerOperation.extract_attribute(movies,
+                                                                 'a',
+                                                                 href_attribute=True)
+          self.keys = []
+          for itemKey in keysTmp:
+               self.keys.append(itemKey[:itemKey.rindex("/")][-9:]) # href = '/title/tt0111161'
+
+          # we can construct a list of all movie titles
+          self.titles =  self.__crawlerOperation.extract_attribute(movies,
+                                                                 'a')
+
+          # Release years can be found under the tag span and class lister-item-year text-muted unbold
+          # found in <span class="lister-item-year text-muted unbold">(2020)</span>
+          self.releases = self.__crawlerOperation.extract_attribute(movies,
+                                                                 'span',
+                                                                 'lister-item-year text-muted unbold')
+
+          # Audience rating can be found under the tag span and class certificate
+          # found in <span class="certificate">TV-MA</span>
+          self.audience_ratings = self.__crawlerOperation.extract_attribute(movies,
+                                                            'span',
+                                                            'certificate')
+
+          # Runtime can be found under the tag span and class runtime
+          # found in <span class="runtime">153 min</span>
+          runtimeTemp = self.__crawlerOperation.extract_attribute(movies,
+                                                  'span',
+                                                  'runtime')
+          self.runtimes = []
+          for itemRuntime in runtimeTemp:
+               itemRuntime = itemRuntime.replace('min', '')
+               self.runtimes.append(self.__dtOperation.convert_time_to_preferred_format(int(itemRuntime)))
+
+          # Genre can be found under the tag span and class genre
+          # found in <span class="genre">Drama</span>
+          self.genres = self.__crawlerOperation.extract_attribute(movies,
+                                                  'span',
+                                                  'genre')
+
+          # IMDB rating value from the data-value attribute we simply need parse the dictionary that the find method returns
+          # found in <div class="inline-block ratings-imdb-rating" name="ir" data-value="8.9">
+          self.imdb_ratings = self.__crawlerOperation.extract_attribute(movies,
+                                                       'div',
+                                                       'inline-block ratings-imdb-rating',
+                                                       text_attribute=False)
+
+          # we’ll use a dictionary to filter for the attribute name='nv’ in our findAll method and grab the first element
+          # found in <span name="nv" data-value="47467">47,467</span>
+          self.votes = self.__crawlerOperation.extract_attribute(movies,
+                                                  'span' ,
+                                                  {'name' : 'nv'},
+                                                  order=0,
+                                                  duplicated=True)
+
+          # director information is located within an initial p tag and thereafter an a tag — both without class attributes making it necessary to unnest the data
+          self.directors = self.__crawlerOperation.extract_attribute(movies,
+                                                       'p',
+                                                       '',
+                                                       'a',
+                                                       '',
+                                                       text_attribute=True,
+                                                       order=0,
+                                                       nested=True)
+
+          # actors always correspond to the remaining a tags
+          actorsTemp = self.__crawlerOperation.extract_attribute(movies,
+                                                  'p',
+                                                  '',
+                                                  'a',
+                                                  '',
+                                                  text_attribute=True,
+                                                  order=slice(1, 5, None),
+                                                  nested=True)
+          self.actors = []
+          for itemActor in actorsTemp:
+               self.actors.append(str(itemActor).replace("[","").replace("]","").replace("'",""))
+
+          self.descriptions =  self.__crawlerOperation.extract_attribute(movies,
+                                                  'p',
+                                                  'text-muted',
+                                                  order=1,
+                                                  duplicated=True)
+
+          self.__export_to_file(filename,
+                                   extension)
+
+     # save every time multi imdb item 
+     def _saveIMDbData(self):
+          # the first line of input is the number of rows of the array
+          size = len(self.keys)
+          imdbs = []
+          for i in range(size):
+               imdbs.append([ self.keys[i],
+                              self.titles[i],
+                              self.releases[i], 
+                              self.audience_ratings[i],
+                              self.runtimes[i], 
+                              self.genres[i], 
+                              self.imdb_ratings[i],
+                              self.votes[i], 
+                              self.directors[i],
+                              self.actors[i],
+                              self.descriptions[i] ])
+          self.__businessOperation.insert_multi_scrapped_data_by_list(imdbs)
+     """
+     -----// end protected member function: can access within the class only //-----
+     """
+
+     """
+     -----// begin public member function: easily accessible from any part of the program //-----
+     """
+     def scrapWebsite(self): 
+          print('This is base scraping')
+
+     # save every time one imdb item 
+     def saveSingleIMDbData(self,
                          titles,
                          releases,
                          audience_ratings,
@@ -104,13 +307,12 @@ class BaseScraping:
                          __now,
                          __now ]
                )
-               
                self.__businessOperation.insert_edit_single_scrapped_data_by_list(__imdb)
 
-     def saveIMDbData(self,
-                         imdbs): 
-          self.__businessOperation.insert_edit_multi_scrapped_data_by_list(imdbs)
-          
+     
+     """
+     -----// end public member function: easily accessible from any part of the program //-----
+     """
   
 # derived class 
 # this class stop dev from 23/12/2020 
@@ -314,7 +516,7 @@ class ScrapingNonSelenium(BaseScraping):
                     #                               descriptions) 
 
 # derived class 
-class ScrapingSelenium(BaseScraping): 
+class ScrapingChromeSelenium(BaseScraping): 
      # private data members
      __csvOperation = None
 
@@ -325,23 +527,14 @@ class ScrapingSelenium(BaseScraping):
      
      # public member function  
      def scrapWebsite(self): 
-          # accessing protected member functions of super class 
-          #os.getcwd(): get current working directory
-          self._setDriverPath(os.getcwd() + constant.CHROME_DRIVER_PATH)
+          driver = BaseScraping.initChromeWebDriver(self)
 
           # accessing protected data members of super class  
           launchUrl = self._url + "/search/title"
-
-          # Define Chrome options to open the window in maximized mode
-          options = webdriver.ChromeOptions()
-          # options.headless = True # hide browser
-          options.add_argument("--start-maximized")
-
-          # create a new Chrome session
-          driver = webdriver.Chrome(executable_path=self._driverPath, options=options)
           
           print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
-          # driver.implicitly_wait(5)
+          # tmp_code: driver.implicitly_wait(5)
+          # navigate to a page given by the URL
           driver.get(launchUrl)
 
           # set check in checkbox have "IMDb Top 100" value
@@ -406,8 +599,8 @@ class ScrapingSelenium(BaseScraping):
                keys.append(currentSpan.findNext('a')["href"][:currentSpan.findNext('a')["href"].rindex("/")][-9:])
 
                #Selenium visits each Job Title page
-               detail_link = driver.find_element_by_xpath('//a[@href="' + currentSpan.findNext('a')["href"] + '"]')
-               detail_link.click() #click detail link
+               detail_link = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//a[contains(@href, "' + currentSpan.findNext('a')["href"] + '")]')))
+               detail_link.click()
 
                #Selenium hands of the source of the specific job page to Beautiful Soup
                soup_level2 = BeautifulSoup(driver.page_source, 'lxml')
@@ -443,7 +636,9 @@ class ScrapingSelenium(BaseScraping):
                               # actor_item += "'" + actor.text + "'" + (", " if indexActor < len(arrActor) - 2 else "")
                               actor_item += actor.text + (", " if indexActor < len(arrActor) - 2 else "")
                     actors.append(actor_item)
-                    # descriptions.append(divPlotSummary.find_element_by_css_selector("div[class='ipc-html-content ipc-html-content--base'] > div").text.strip())
+
+                    descriptions.append(divPlotSummary.find_element(By.XPATH, "//div[@class=\"ipc-html-content ipc-html-content--base\"]").text.strip())
+                    # descriptions.append(WebDriverWait(driver, 10).until(EC.presence_of_element_located(By.XPATH, '//div[contains(@class, "ipc-html-content")]')).text.strip())
                except NoSuchElementException:
                     pass
 
@@ -457,19 +652,15 @@ class ScrapingSelenium(BaseScraping):
 
                if counter == 6:
                     break
-
                #end loop block
           #loop has completed
 
           #end the Selenium browser session
           driver.quit()
 
-          
-
           #combine all pandas dataframes in the list into one big dataframe
           # init dictionary
-          df_dict_imdb = { 'Key': keys, 
-                              'Title': titles, 
+          df_dict_imdb = { 'Title': titles, 
                               'Release': releases, 
                               'Audience_Rating': audience_ratings,
                               'Runtime': runtimes, 
@@ -477,8 +668,8 @@ class ScrapingSelenium(BaseScraping):
                               'Imdb_Rating': imdb_ratings,
                               'Votes': votes, 
                               'Director': directors,
-                              'Actors': actors }
-                              # 'Desc': descriptions }
+                              'Actors': actors,
+                              'Descriptions': descriptions }
           
           print('4. Download data and export title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
           # export to single csv file with header
@@ -487,35 +678,114 @@ class ScrapingSelenium(BaseScraping):
                                              self._csvPath) 
           
           print('5. Save imdb data into database')
-          # the first line of input is the number of rows of the array
-          n = len(keys)
-          imdbs = []
-          for i in range(n):
-               imdbs.append([ keys[i],
-                              titles[i],
-                              releases[i], 
-                              audience_ratings[i],
-                              runtimes[i], 
-                              genres[i], 
-                              imdb_ratings[i],
-                              votes[i], 
-                              directors[i],
-                              actors[i]        ])
-
           # Calling method saveIMDbData from the parent's class (BaseScraping)
           BaseScraping.saveIMDbData(self,
-                                        imdbs)
-          # BaseScraping.saveIMDbData(self,
-          #                               titles,
-          #                               releases,
-          #                               audience_ratings,
-          #                               runtimes,
-          #                               genres,
-          #                               imdb_ratings,
-          #                               votes,
-          #                               directors,
-          #                               actors,
-          #                               descriptions) 
+                                        keys, 
+                                        titles, 
+                                        releases, 
+                                        audience_ratings,
+                                        runtimes, 
+                                        genres, 
+                                        imdb_ratings,
+                                        votes, 
+                                        directors,
+                                        actors,
+                                        descriptions)
+
+class ScrapingFirefoxSelenium(BaseScraping): 
+     # private data members
+     __csvOperation = None
+     
+     # constructor  
+     def __init__(self, csvPath):
+          self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
+          
+          BaseScraping.__init__(self, csvPath)  
+     
+     # public member function  
+     def scrapWebsite(self): 
+          firefox_driver = self._initFirefoxWebDriver()
+          wait = WebDriverWait(firefox_driver, 10)
+
+          # accessing protected data members of super class  
+          launchUrl = self._url + "/search/title"
+
+          print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
+          # navigate to a page given by the URL
+          firefox_driver.get(launchUrl)
+
+          # set check in checkbox have "IMDb Top 100" value
+          chkGroup100 = firefox_driver.find_element_by_xpath("//input[@id='groups-1']")
+          chkGroup100.click()
+
+          # set check in checkbox have "G" value
+          chkCertificates1 = firefox_driver.find_element_by_id('certificates-1') # US Certificates : G
+          chkCertificates1.click()
+
+           # set check in checkbox have "PG" value
+          chkCertificates2 = firefox_driver.find_element_by_id('certificates-2') # US Certificates : PG
+          chkCertificates2.click()
+
+           # set check in checkbox have "PG-13" value
+          chkCertificates3 = firefox_driver.find_element_by_id('certificates-3') # US Certificates : PG-13
+          chkCertificates3.click()
+
+           # set check in checkbox have "R" value
+          chkCertificates4 = firefox_driver.find_element_by_id('certificates-4') # US Certificates : R
+          chkCertificates4.click()
+
+          ddlSort = firefox_driver.find_element_by_name('sort')
+          for optionSort in ddlSort.find_elements_by_tag_name('option'):
+               if optionSort.text.strip() == 'User Rating Descending':
+                    optionSort.click() # select() in earlier versions of webdriver
+                    break
+
+          #After opening the url above, Selenium clicks the specific submit button
+          submit_button = firefox_driver.find_element_by_class_name('primary')
+          submit_button.click() #click submit button
+
+          print('2. Visit list IMDb website')
+
+          #Selenium hands the page source to Beautiful Soup
+          soup_level1 = BeautifulSoup(firefox_driver.page_source, 'lxml')
+          divMain = soup_level1.find('div', id=re.compile("^main"))
+
+          list_page_source = firefox_driver.page_source
+
+          counter = 1  
+          
+
+          print('3. Visit and Extract data from detail website')
+          #Beautiful Soup finds all Job Title links on the agency page and the loop begins
+          for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
+               detail_link_text = currentSpan.findNext('a')["href"]
+
+               detail_link = wait.until(lambda driver: driver.find_element_by_xpath('//a[contains(@href, "' + detail_link_text + '")]'))
+               # wait.until(EC.presence_of_element_located((By.XPATH, '//a[contains(@href, "' + currentSpan.findNext('a')["href"] + '")]')))
+               detail_link.click()
+
+               #Ask Selenium to click the back button
+               firefox_driver.execute_script("window.history.go(-1)") 
+               
+               print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + detail_link_text))
+               
+               counter += 1
+               if counter == 6:
+                    break
+               #end loop block
+          #loop has completed
+
+          #end the Selenium browser session
+          firefox_driver.quit()
+
+          print('4. Extract and save title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
+          self._extract_export_html(list_page_source,
+                                        filename="imdb_selenium", 
+                                        extension="csv")
+          
+          print('5. Save imdb data into database')
+          # Calling private method saveIMDbData from the parent's class (BaseScraping)
+          self._saveIMDbData()
 
 
 class BusinessOperation:
@@ -575,8 +845,8 @@ class BusinessOperation:
                sd.vacuum_imdb_sqlite(conn)
           sd.close_connection(conn)
 
-     # insert or edit multi item imdb
-     def insert_edit_multi_scrapped_data_by_list(self, 
+     # insert multi item imdb
+     def insert_multi_scrapped_data_by_list(self, 
                                              imdbs):
           # 1. init method or constructor                          
           sd = StoringData.getInstance()

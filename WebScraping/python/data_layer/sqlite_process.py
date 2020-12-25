@@ -79,11 +79,11 @@ class StoringData:
         try:
             sql_insert_query = ''' INSERT INTO IMDb
                                     (
-                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors, Desc, Created_On, Modified_On
+                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors
                                     )
                                     VALUES
                                     (
-                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                                     );
                                 '''
             # create a Cursor object by calling the cursor method of the Connection object.
@@ -110,11 +110,11 @@ class StoringData:
             # , Desc, Created_On, Modified_On
             sql_insert_query = ''' INSERT INTO IMDb
                                     (
-                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors
+                                        Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors, Desc
                                     )
                                     VALUES
                                     (
-                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                                     );
                                 '''
             # create a Cursor object by calling the cursor method of the Connection object.
@@ -137,7 +137,7 @@ class StoringData:
     def read_imdb(self, conn, key):
         imdb_item = None
         try:
-            sql_select_query  = ''' SELECT Id, Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors, Desc, Created_On, Modified_On
+            sql_select_query  = ''' SELECT Id, Key, Title, Release, Audience_Rating, Runtime, Genre, Imdb_Rating, Votes, Director, Actors
                                     FROM IMDb 
                                     WHERE Key = ?; '''
 
@@ -161,9 +161,11 @@ class StoringData:
     def update_imdb(self, conn, imdb):
         lastRowID = 0
         try:
+            # ,
+            # Desc = ?,
+            # Modified_On = ?
             sql_update_query = ''' UPDATE IMDb 
-                                    SET Key = ?,
-                                        Title = ?,
+                                    SET Title = ?,
                                         Release = ?,
                                         Audience_Rating = ?,
                                         Runtime = ?,
@@ -171,13 +173,11 @@ class StoringData:
                                         Imdb_Rating = ?,
                                         Votes = ?,
                                         Director = ?,
-                                        Actors = ?,
-                                        Desc = ?,
-                                        Modified_On = ?
-                                    WHERE Id = ?; '''
+                                        Actors = ?
+                                    WHERE Key = ?; '''
             # create a Cursor object by calling the cursor method of the Connection object.
             cur = conn.cursor()
-            cur.execute(sql_update_query, (imdb[1], imdb[2], imdb[3], imdb[4], imdb[5], imdb[6], imdb[7], imdb[8], imdb[9], imdb[10], imdb[11], imdb[12], imdb[0],))
+            cur.execute(sql_update_query, (imdb[1], imdb[2], imdb[3], imdb[4], imdb[5], imdb[6], imdb[7], imdb[8], imdb[9], imdb[0],))
             conn.commit()
             lastRowID = cur.lastrowid
         except Error as e:
@@ -194,15 +194,15 @@ class StoringData:
     # :param modifiedOn: Modified_On of IMDb table
     # :param Id: Id of IMDb table
     # :return: lastrowid (imdb id updated)
-    def update_imdb_modifiedOn(self, conn, modifiedOn, Id):
+    def update_imdb_modifiedOn(self, conn, modifiedOn, key):
         lastRowID = 0
         try:
             sql_update_query = ''' UPDATE IMDb 
                                     SET Modified_On = ?
-                                    WHERE Id = ?; '''
+                                    WHERE Key = ?; '''
             # create a Cursor object by calling the cursor method of the Connection object.
             cur = conn.cursor()
-            cur.execute(sql_update_query, (modifiedOn, Id, ))
+            cur.execute(sql_update_query, (modifiedOn, key, ))
             conn.commit()
             lastRowID = cur.lastrowid
         except Error as e:
@@ -218,13 +218,13 @@ class StoringData:
     # :param conn:  Connection to the SQLite database
     # :param id: id of the task
     # :return: result (row count after deleted)
-    def delete_imdb_by_Id(self, conn, id):
+    def delete_imdb_by_Id(self, conn, key):
         result = 0
         try:
-            sql_delete_query = 'DELETE FROM IMDb WHERE Id = ?'
+            sql_delete_query = 'DELETE FROM IMDb WHERE Key = ?'
             # create a Cursor object by calling the cursor method of the Connection object.
             cur = conn.cursor()
-            cur.execute(sql_delete_query, (id,))
+            cur.execute(sql_delete_query, (key,))
             conn.commit()
             result = cur.rowcount
         except Error as e:

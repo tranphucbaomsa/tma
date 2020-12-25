@@ -3,8 +3,8 @@
 # import EnumStatusCode class in utilities\app_enum.py
 # import EnglishLocalizer and VietnameseLocalizer class in utilities\language_localize.py
 # import PathLibOperation class in utilities\CrawlerLibrary.py
-from business_layer.scraping_process import ScrapingNonSelenium, ScrapingSelenium
-from utilities.app_enum import EnumMainOptions
+from business_layer.scraping_process import ScrapingChromeSelenium, ScrapingFirefoxSelenium
+from utilities.app_enum import EnumBrowserOptions
 from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
 from utilities.CrawlerLibrary import PathLibOperation
 
@@ -83,14 +83,14 @@ class ViewOperation:
             if isValid:
                 # tmp_code: options = ["Scraping Without Selenium.", "Scraping With Selenium."]
                 # convert the enum object [EnumMainOptions] to a list [options]
-                options = [name for name in dir(EnumMainOptions) if not name.startswith('_')]
+                options = [name for name in dir(EnumBrowserOptions) if not name.startswith('_')]
                 choice = self.__let_user_pick(options, vi) # returns integer
 
                 if choice == 1:
-                    sns = ScrapingNonSelenium(csv_path)
+                    sns = ScrapingChromeSelenium(csv_path)
                     sns.scrapWebsite()
                 elif choice == 2:
-                    ss = ScrapingSelenium(csv_path)
+                    ss = ScrapingFirefoxSelenium(csv_path)
                     ss.scrapWebsite()
                 else:
                     print(vi.localize("choose_nothing"))

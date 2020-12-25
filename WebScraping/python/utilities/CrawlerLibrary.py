@@ -75,12 +75,12 @@ class CrawlerOperation:
         soap = None
         response = None
         try:
-            soap = self.__request_url(url)
+            soap = self.__request_to_soap(url)
         except Exception as ex:
             print('There was a problem: %s' % (ex)) 
         return soap
 
-    def __request_url(self, base_url):
+    def __request_to_soap(self, base_url):
         custom_header = {"Accept-Language": "en-US", 
                             "Content-Type": "text/html; charset=utf-8",
                             "Connection": "keep-alive"}
@@ -146,10 +146,7 @@ class CrawlerOperation:
                     tag, 
                     class_=None):   
         if movie.find(tag, class_):
-            # return movie.find(tag, class_).get('href')
-            hrefs = movie.find(tag, class_).findAll('a',href=True)
-            for href in hrefs:
-                return href
+            return movie.find(tag, class_).get('href')
         else:
             return ''
 
@@ -260,7 +257,68 @@ class PathLibOperation:
             return True
             # os.makedirs(os.path.dirname(path))
     
+# all operation about export to file (csv, xlsx,...)
+class ExportOperation:
+    __instance = None
 
+    @staticmethod 
+    def getInstance():
+      # Static access method.
+      if ExportOperation.__instance == None:
+         ExportOperation()
+      return ExportOperation.__instance
+
+    def __init__(self):  # init method or constructor   
+        # Virtually private constructor.
+        if ExportOperation.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            ExportOperation.__instance = self
+
+    """
+    -----// begin public member function: easily accessible from any part of the program //-----
+    """
+    # extracting all the information we need an turning it into a clean pandas data frame
+    # export data frame to csv format
+    def export_data_to_file(self, 
+                            df_dict,
+                            folder_path,
+                            filename,
+                            extension):
+        """Dispatch method"""
+        method_name = 'ext_' + str(extension)
+        # Get the method from 'self'. Default to a lambda.
+        method = getattr(self, method_name, lambda: "Invalid extension")
+        # Call the method as we return it
+        return method(df_dict, folder_path, filename)
+
+    # extracting all the information we need an turning it into a clean pandas data frame
+    # export data frame to csv format
+    def ext_csv(self,
+                    df_dict,
+                    folder_path,
+                    filename):
+        df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
+
+        df.to_csv(folder_path + "\\" + filename + ".csv",
+                    header=True, 
+                    index=False)
+        return "df.to_csv"
+ 
+    # export data frame to xlsx format
+    def ext_xlsx(self,
+                    df_dict,
+                    folder_path,
+                    filename):
+        df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
+        df.to_excel(folder_path + "\\" + filename + ".xlsx", 
+                        sheet_name='IMDb',
+                        header=True,
+                        index = False)
+        return "df.to_excel"
+    """
+    -----// end public member function: easily accessible from any part of the program //-----
+    """
 
 # get error message from status code
 def response_message(status_code):

@@ -40,9 +40,12 @@ class EnumStatusCode(Enum):
     def _missing_(cls, value):  # if status code dont match, it will return AN_REQUEST_EXCEPTION_OCCURRED
         return EnumStatusCode.AN_REQUEST_EXCEPTION_OCCURRED
 
-
-# creating enumerations using class 
-# HTTP response status codes
+# multi choice of scraping method
 class EnumMainOptions(Enum):
     SCRAPING_WITHOUT_SELENIUM = 1
     SCRAPING_WITH_SELENIUM = 2
+
+# multi choice of selenium browser driver 
+class EnumBrowserOptions(Enum):
+    CHROME_BROWSER = 1
+    FIREFOX_BROWSER = 2
