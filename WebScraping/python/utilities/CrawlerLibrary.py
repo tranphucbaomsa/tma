@@ -15,6 +15,8 @@ from utilities import constant
 from utilities.app_enum import EnumStatusCode
 import os
 
+from selenium.webdriver.common.by import By
+
 # all operation about crawler
 class CrawlerOperation:
     __instance = None
@@ -36,14 +38,7 @@ class CrawlerOperation:
     """
     -----// begin public member function: easily accessible from any part of the program //-----
     """
-    # titles = [movie.find('a').text for movie in movies]
-    # release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
-    # imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
-    # votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
-    # earnings = movie.findAll('span' , {'name' : 'nv'})[1]['data-value']
-    # director = movie.find('p').find('a').text
-    # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
-    # descriptions = movie.findAll('p' , {'class' : 'text-muted'})[1].text
+    # this function use to get item attibute in list page
     def extract_attribute(self, 
                             movies, 
                             tag_1, 
@@ -54,7 +49,7 @@ class CrawlerOperation:
                             order=None, 
                             nested=False,
                             duplicated=False,
-                            href_attribute=False):        
+                            href_attribute=False):
         data_list = []
         for movie in movies:
             if text_attribute:
@@ -62,13 +57,61 @@ class CrawlerOperation:
                     data_list.append(self.__nested_text_value(movie, tag_1, class_1, tag_2, class_2, order))
                 elif duplicated:  # Extracting same class: description
                     data_list.append(self.__order_text_value(movie, tag_1, class_1, order))
-                elif href_attribute:  # Extracting same class: description
+                elif href_attribute:  # Extracting href value of anchor link: keys
                     data_list.append(self.__href_value(movie, tag_1, class_1))
                 else:  # Extracting text: titles and release year
                     data_list.append(self.__text_value(movie, tag_1, class_1))
             else:  # Extracting Numerical Values: imdb_rating  
                 data_list.append(self.__numeric_value(movie, tag_1, class_1, order))
         return data_list
+
+   
+    def extract_single_attribute_lxml(self, 
+                                        driver, 
+                                        tag_1, 
+                                        class_1='', 
+                                        tag_2='', 
+                                        class_2='',
+                                        text_attribute=True,
+                                        order=None, 
+                                        nested=False,
+                                        id_attribute=False,
+                                        itemprop_attribute=False,
+                                        css_selector_inner=False,
+                                        array_value=False,
+                                        split_separator=None,
+                                        index_element=None):
+        data = ""
+        if not split_separator:
+            if not text_attribute:
+                if nested:  # Extracting Nested Values: title
+                    data = self.__nested_text_value_lxml(driver, tag_1, class_1, tag_2, class_2, order)
+                elif id_attribute:  # Extracting value by id attr: release
+                    data = self.__text_value_by_id_lxml(driver, tag_1, class_1)
+                elif itemprop_attribute:  # Extracting value by itemprop attr: imdb_rating
+                    data = self.__order_text_value_by_itemprop_lxml(driver, tag_1, class_1, order)
+                elif css_selector_inner: # Extracting value by two tag and class with order: director
+                    data = self.__text_value_css_inner_lxml(driver, tag_1, class_1, tag_2, order)
+                elif array_value: # Extracting value by array return: actor
+                    arrValue = self.__array_item_css_inner_lxml(driver, tag_1, class_1,  tag_2, order)
+                    actor_item = ""
+                    # traverse in the string   
+                    for itemValue in arrValue:  
+                            indexActor = arrValue.index(itemValue)
+                            if indexActor < len(arrValue) - 1:
+                                actor_item += itemValue.text + (", " if indexActor < len(arrValue) - 2 else "")
+                    data = actor_item
+            else:  # Extracting text: vote
+                if class_2:
+                    data = self.__text_value_by_two_class_lxml(driver, tag_1, class_1, class_2)
+                else:
+                    data = self.__text_value_by_class_lxml(driver, tag_1, class_1)
+        else: # Extracting array text: audience_rating, runtime, genre
+            arrSplit = self.__array_value_lxml(driver, tag_1, class_1, split_separator)
+            if arrSplit:
+                data = arrSplit[index_element]
+
+        return data
 
     # Connect to the webpage, extract the HTML behind it and convert it to a BeautifulSoup object
     def get_page_contents(self, url):
@@ -101,6 +144,7 @@ class CrawlerOperation:
     -----// begin private member function: can access within the class only //-----
     """
     # extract numerical values from movie item
+    # imdb_rating = movie.find('div', 'inline-block ratings-imdb-rating')['data-value']
     def __numeric_value(self, 
                         movie, 
                         tag, 
@@ -117,6 +161,8 @@ class CrawlerOperation:
         return to_extract
 
     # extract nested values from movie item
+    # director = movie.find('p').find('a').text
+    # actors = [actor.text for actor in movie.find('p').findAll('a')[1:]]
     def __nested_text_value(self, 
                             movie, 
                             tag_1, 
@@ -130,6 +176,8 @@ class CrawlerOperation:
             return [val.text for val in movie.find(tag_1, class_1).findAll(tag_2, class_2)[order]]
 
     # extract text values from movie item
+    # titles = [movie.find('a').text for movie in movies]
+    # release = [movie.find('span', class_='lister-item-year text-muted unbold').text for movie in movies]
     def __text_value(self, 
                     movie, 
                     tag, 
@@ -141,6 +189,7 @@ class CrawlerOperation:
             return ''
 
     # extract href values from movie item
+    # keys = [movie.find('a').get('href') for movie in movies]
     def __href_value(self, 
                     movie, 
                     tag, 
@@ -151,6 +200,8 @@ class CrawlerOperation:
             return ''
 
     # extract text in tag with order from movie item
+    # votes = movie.findAll('span' , {'name' : 'nv'})[0]['data-value']
+    # descriptions = movie.findAll('p' , {'class' : 'text-muted'})[1].text
     def __order_text_value(self, 
                         movie, 
                         tag, 
@@ -165,6 +216,97 @@ class CrawlerOperation:
         else:
             to_extract = movie.find(tag, class_).text
         return to_extract.strip() # strip(): removing any leading and trailing whitespaces including tabs (\t)
+    
+    # extract nested values from webdriver
+    def __nested_text_value_lxml(self, 
+                                    driver, 
+                                    tag_1, 
+                                    class_1, 
+                                    tag_2, 
+                                    class_2, 
+                                    order=None):
+        if not order:
+            return driver.find_element(By.XPATH, "//" + tag_1 + "[@class=" + "\"" + class_1 + "\"" + "]/" + tag_2 + "[@class=\"" + class_2 + "\"]").text.strip()
+        else:
+            return [val.text for val in driver.find_elements(By.XPATH, "//" + tag_1 + "[@class=" + "\"" + class_1 + "\"" + "]/" + tag_2 + "[@class=\"" + class_2 + "\"]")[order]]
+
+     # extract text values by id from webdriver
+    def __text_value_by_id_lxml(self, 
+                                driver, 
+                                tag, 
+                                id_=None):   
+        if driver.find_element(By.XPATH, "//" + tag + "[@id=\"" + id_ + "\"]"):
+            return driver.find_element(By.XPATH, "//" + tag + "[@id=\"" + id_ + "\"]").text.strip()
+        else:
+            return ''
+
+    # extract text values by class from webdriver
+    def __text_value_by_class_lxml(self, 
+                                    driver, 
+                                    tag, 
+                                    class_=None):   
+        if driver.find_element(By.XPATH, "//" + tag + "[contains(@class, \"" + class_ + "\")]"):
+            return driver.find_element(By.XPATH, "//" + tag + "[contains(@class, \"" + class_ + "\")]").text.strip()
+        else:
+            return ''
+
+    def __text_value_by_two_class_lxml(self, 
+                                    driver, 
+                                    tag, 
+                                    class_1=None,
+                                    class_2=None):   
+        if driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_1 + "\" or @class=\"" + class_2 + "\"]"):
+            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_1 + "\" or @class=\"" + class_2 + "\"]").text.strip()
+        else:
+            return ''
+
+    # extract text in tag with order from webdriver
+    def __order_text_value_by_itemprop_lxml(self, 
+                        driver, 
+                        tag, 
+                        class_=None, 
+                        order=None): 
+        if not order:
+            to_extract = driver.find_element(By.XPATH, "//" + tag + "[@itemprop=" + "\"" + class_ + "\"" + "]").text
+        else:
+            to_extract = [val.text for val in driver.find_elements(By.XPATH, "//" + tag + "[@itemprop=" + "\"" + class_ + "\"" + "]")[order]]
+        return to_extract.strip() # strip(): removing any leading and trailing whitespaces including tabs (\t)
+
+    # extract array in tag with class and split_separator from webdriver
+    def __array_value_lxml(self, 
+                        driver, 
+                        tag, 
+                        class_=None,
+                        split_separator=None): 
+        if not driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]"):
+            return []
+        else:
+            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]").text.split(" | ")
+
+    # extract inner text values by class from webdriver
+    def __text_value_css_inner_lxml(self, 
+                                    driver, 
+                                    tag, 
+                                    class_=None,
+                                    tag_inner=None,
+                                    order=None):   
+        if driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner):
+            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner).text
+        else:
+            return ''
+
+    # extract array in tag with class and split_separator from webdriver
+    def __array_item_css_inner_lxml(self, 
+                                    driver, 
+                                    tag, 
+                                    class_=None,
+                                    tag_inner=None,
+                                    order=None):   
+        if driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner):
+            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner)
+        else:
+            return []
+    
     """
     -----// end private member function: can access within the class only //-----
     """
@@ -312,7 +454,7 @@ class ExportOperation:
                     filename):
         df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
         df.to_excel(folder_path + "\\" + filename + ".xlsx", 
-                        sheet_name='IMDb',
+                        sheet_name=filename,
                         header=True,
                         index = False)
         return "df.to_excel"
