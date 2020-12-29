@@ -36,5 +36,7 @@ class EnglishLocalizer:
 
     # Simply return the same message
     def localize(self, msg): 
-        return msg 
+        # return msg 
+        # change the message using translations
+        return self.translations.get(msg, msg)
   

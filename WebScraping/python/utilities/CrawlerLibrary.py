@@ -38,7 +38,7 @@ class CrawlerOperation:
     """
     -----// begin public member function: easily accessible from any part of the program //-----
     """
-    # this function use to get item attibute in list page
+    # this function use to get item attibute in list page base on html parser
     def extract_attribute(self, 
                             movies, 
                             tag_1, 

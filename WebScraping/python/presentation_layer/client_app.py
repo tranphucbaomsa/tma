@@ -8,6 +8,8 @@ from utilities.app_enum import EnumBrowserOptions
 from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
 from utilities.CrawlerLibrary import PathLibOperation
 
+import sys
+
 class ViewOperation:
     __instance = None
 
@@ -29,11 +31,11 @@ class ViewOperation:
     -----// begin private member function: can access within the class only //-----
     """
     # show input choice to user (1,2,3,...)
-    def __let_user_pick(self, options, vi):
-        print(vi.localize("please_choose"))
+    def __let_user_pick(self, options, en):
+        print(en.localize("please_choose"))
         for idx, element in enumerate(options):
             print("{}) {}".format(idx+1,element))
-        i = input(vi.localize("enter_number"))
+        i = input(en.localize("enter_number"))
         try:
             if 0 < int(i) <= len(options):
                 return int(i)
@@ -42,11 +44,10 @@ class ViewOperation:
         return None
 
     # show input path that store csv to user 
-    def __let_user_input_path(self, vi):
-        path = input(vi.localize("enter_path"))
+    def __let_user_input_path(self, en):
+        path = input(en.localize("enter_path"))
         try:
             if path:
-            
                 return path
         except:
             pass
@@ -69,13 +70,13 @@ class ViewOperation:
     -----// begin public member function: easily accessible from any part of the program //-----
     """
     def web_scraping_main(self):
-        vi = self.__LanguageTranslation("vi")
+        en = self.__LanguageTranslation()
         pathLibOperation  = PathLibOperation.getInstance()
 
-        print(vi.localize("app_title_start"))
+        print(en.localize("app_title_start"))
         print('\n')
 
-        csv_path = self.__let_user_input_path(vi) # returns string (Ex: D:\ExportDocument)
+        csv_path = self.__let_user_input_path(en) # returns string (Ex: D:\ExportDocument)
 
         if csv_path != None:
             isValid = pathLibOperation.check_valid_dir_names(csv_path)
@@ -84,7 +85,7 @@ class ViewOperation:
                 # tmp_code: options = ["Scraping Without Selenium.", "Scraping With Selenium."]
                 # convert the enum object [EnumMainOptions] to a list [options]
                 options = [name for name in dir(EnumBrowserOptions) if not name.startswith('_')]
-                choice = self.__let_user_pick(options, vi) # returns integer
+                choice = self.__let_user_pick(options, en) # returns integer
 
                 if choice == 1:
                     sns = ScrapingChromeSelenium(csv_path)
@@ -93,14 +94,15 @@ class ViewOperation:
                     ss = ScrapingFirefoxSelenium(csv_path)
                     ss.scrapWebsite()
                 else:
-                    print(vi.localize("choose_nothing"))
+                    print(en.localize("choose_nothing"))
             else:
-                print(vi.localize("please_enter_valid_path"))
+                print(en.localize("please_enter_valid_path"))
         else:
-            print(vi.localize("enter_csv_path_first"))
+            print(en.localize("enter_csv_path_first"))
 
         print('\n')
-        print(vi.localize("app_title_finish"))
+        print(en.localize("app_title_finish"))
+        sys.exit(101) # exit a Python Program that doesn’t involve throwing an exception
     """
     -----// end public member function: easily accessible from any part of the program //-----
     """

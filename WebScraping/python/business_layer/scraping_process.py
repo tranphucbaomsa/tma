@@ -12,7 +12,7 @@ import os
 from os import path
 import time
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,8 +20,7 @@ import re  # Regular expression operations
 from bs4 import BeautifulSoup
 import pandas as pd
 import datetime as dt
-# using defaultdict 
-from collections import defaultdict 
+import sys
 
 # super class 
 class BaseScraping: 
@@ -74,6 +73,18 @@ class BaseScraping:
      """
      -----// begin private member function: can access functions by derived class //-----
      """
+     def __resource_path(self, 
+                         relative_path):
+          try:
+               base_path = sys._MEIPASS
+          except Exception:
+               # os.getcwd(): get current working directory
+               # os.path.dirname(path): get the directory name from the specified path
+               # os.path.abspath(path): get the parent directory
+               # os.pardir: a constant string used by the operating system to refer to the parent directory (‘..‘ for UNIX, Windows and ‘::‘ for Mac OS)
+               # __file__: get current filename that contain this code
+               base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+          return os.path.join(base_path, relative_path)
      """
      -----// end private member function: can access functions by derived class //-----
      """
@@ -102,10 +113,10 @@ class BaseScraping:
 
      def _initFirefoxWebDriver(self): 
           # accessing protected member functions of super class 
-          # os.getcwd(): get current working directory
-          _driverPath = os.getcwd() + constant.FIREFOX_GOCKO_DRIVER_PATH
+          _driverPath = self.__resource_path(constant.FIREFOX_GOCKO_DRIVER_PATH)
           # Define Firefox options to open the window in maximized mode
           options = webdriver.FirefoxOptions()
+          # options.set_headless(True) # hide browser
           options.add_argument("--start-maximized")
           # the instance of Firefox WebDriver is created
           driver = webdriver.Firefox(executable_path=_driverPath, options=options)
@@ -113,11 +124,10 @@ class BaseScraping:
 
      def _initChromeWebDriver(self): 
           # accessing protected member functions of super class 
-          # os.getcwd(): get current working directory
-          _driverPath = os.getcwd() + constant.CHROME_DRIVER_PATH
+          _driverPath = self.__resource_path(constant.CHROME_DRIVER_PATH)
           # Define Chrome options to open the window in maximized mode
           options = webdriver.ChromeOptions()
-          # options.headless = True # hide browser
+          # options.set_headless(True) # hide browser
           options.add_argument("--start-maximized")
           # create a new Chrome session
           driver = webdriver.Chrome(executable_path=_driverPath, options=options)
@@ -229,66 +239,63 @@ class BaseScraping:
           # soup_lxml_source: use for parse and extract from lxml page source
           # soup_lxml_source = BeautifulSoup(driver.page_source, 
           #                                    "lxml")
+          self.__keys.append(key)
 
-          try:
-               self.__keys.append(key)
-
-               title_item = self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                     tag_1="div", 
-                                                                                     class_1="title_wrapper", 
-                                                                                     tag_2="h1",
+          title_item = self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                tag_1="div", 
+                                                                                class_1="title_wrapper", 
+                                                                                tag_2="h1",
+                                                                                text_attribute=False,
+                                                                                nested=True)
+          self.__titles.append(title_item[:title_item.rindex("(")].strip())
+          self.__releases.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                     tag_1="span", 
+                                                                                     class_1="titleYear", 
                                                                                      text_attribute=False,
-                                                                                     nested=True)
-               self.__titles.append(title_item[:title_item.rindex("(")].strip())
-               self.__releases.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                          tag_1="span", 
-                                                                                          class_1="titleYear", 
-                                                                                          text_attribute=False,
-                                                                                          id_attribute=True))
-               self.__audience_ratings.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                                    tag_1="div", 
-                                                                                                    class_1="subtext", 
-                                                                                                    text_attribute=False,
-                                                                                                    split_separator=True,
-                                                                                                    index_element=0))
-               self.__runtimes.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                     id_attribute=True))
+          self.__audience_ratings.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
                                                                                                tag_1="div", 
                                                                                                class_1="subtext", 
                                                                                                text_attribute=False,
                                                                                                split_separator=True,
-                                                                                               index_element=1))
-               self.__genres.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                               index_element=0))
+          self.__runtimes.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
                                                                                           tag_1="div", 
                                                                                           class_1="subtext", 
                                                                                           text_attribute=False,
                                                                                           split_separator=True,
-                                                                                          index_element=2))
-               self.__imdb_ratings.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                               tag_1="span", 
-                                                                                               class_1="ratingValue", 
-                                                                                               text_attribute=False,
-                                                                                               order=0,
-                                                                                               itemprop_attribute=True))
-               self.__votes.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                          index_element=1))
+          self.__genres.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                     tag_1="div", 
+                                                                                     class_1="subtext", 
+                                                                                     text_attribute=False,
+                                                                                     split_separator=True,
+                                                                                     index_element=2))
+          self.__imdb_ratings.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
                                                                                           tag_1="span", 
-                                                                                          class_1="small"))
-               self.__directors.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                               tag_1="div", 
-                                                                                               class_1="credit_summary_item",
-                                                                                               tag_2="a",
-                                                                                               text_attribute=False,
-                                                                                               order=0))
-               self.__actors.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                          class_1="ratingValue", 
+                                                                                          text_attribute=False,
+                                                                                          order=0,
+                                                                                          itemprop_attribute=True))
+          self.__votes.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                     tag_1="span", 
+                                                                                     class_1="small"))
+          self.__directors.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
                                                                                           tag_1="div", 
                                                                                           class_1="credit_summary_item",
                                                                                           tag_2="a",
                                                                                           text_attribute=False,
-                                                                                          order=2))
-               self.__descriptions.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
-                                                                                               tag_1="div", 
-                                                                                               class_1="ipc-html-content"))
-          except NoSuchElementException as __nsee:
-               print(__nsee)
+                                                                                          order=0))
+          self.__actors.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+                                                                                     tag_1="div", 
+                                                                                     class_1="credit_summary_item",
+                                                                                     tag_2="a",
+                                                                                     text_attribute=False,
+                                                                                     order=2))
+          # self.__descriptions.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
+          #                                                                                 tag_1="div", 
+          #                                                                                 class_1="ipc-html-content"))
+          
 
      def _export_to_file(self, 
                               # df_dict_imdb=None, 
@@ -304,8 +311,8 @@ class BaseScraping:
                               'Imdb_Rating': self.__imdb_ratings,
                               'Votes': self.__votes, 
                               'Director': self.__directors,
-                              'Actors': self.__actors,
-                              'Descriptions': self.__descriptions }
+                              'Actors': self.__actors } # , 
+                              # 'Descriptions': self.__descriptions }
                               
           # export to single csv file with header
           self.__exportOperation.export_data_to_file(df_dict_imdb,
@@ -611,92 +618,105 @@ class ScrapingChromeSelenium(BaseScraping):
           # accessing protected data members of super class  
           launchUrl = self._url + "/search/title"
           
-          print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
-          # tmp_code: driver.implicitly_wait(5)
-          # navigate to a page given by the URL
-          chrome_driver.get(launchUrl)
+          try:
+               print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
+               # tmp_code: driver.implicitly_wait(5)
+               # navigate to a page given by the URL
+               chrome_driver.get(launchUrl)
 
-          # set check in checkbox have "IMDb Top 100" value
-          chkGroup100 = chrome_driver.find_element_by_xpath("//input[@id='groups-1']")
-          chkGroup100.click()
+               # set check in checkbox have "IMDb Top 100" value
+               chkGroup100 = chrome_driver.find_element_by_xpath("//input[@id='groups-1']")
+               chkGroup100.click()
 
-          # ddlSearchCount = driver.find_element_by_id('search-count')
-          # for optionSearchCount in ddlSearchCount.find_elements_by_tag_name('option'):
-          #     if optionSearchCount.text == '100 per page':
-          #         optionSearchCount.click() # select() in earlier versions of webdriver
-          #         break
+               # ddlSearchCount = driver.find_element_by_id('search-count')
+               # for optionSearchCount in ddlSearchCount.find_elements_by_tag_name('option'):
+               #     if optionSearchCount.text == '100 per page':
+               #         optionSearchCount.click() # select() in earlier versions of webdriver
+               #         break
 
-          # set check in checkbox have "G" value
-          chkCertificates1 = chrome_driver.find_element_by_id('certificates-1') # US Certificates : G
-          chkCertificates1.click()
+               # set check in checkbox have "G" value
+               chkCertificates1 = chrome_driver.find_element_by_id('certificates-1') # US Certificates : G
+               chkCertificates1.click()
 
-           # set check in checkbox have "PG" value
-          chkCertificates2 = chrome_driver.find_element_by_id('certificates-2') # US Certificates : PG
-          chkCertificates2.click()
+               # set check in checkbox have "PG" value
+               chkCertificates2 = chrome_driver.find_element_by_id('certificates-2') # US Certificates : PG
+               chkCertificates2.click()
 
-           # set check in checkbox have "PG-13" value
-          chkCertificates3 = chrome_driver.find_element_by_id('certificates-3') # US Certificates : PG-13
-          chkCertificates3.click()
+               # set check in checkbox have "PG-13" value
+               chkCertificates3 = chrome_driver.find_element_by_id('certificates-3') # US Certificates : PG-13
+               chkCertificates3.click()
 
-           # set check in checkbox have "R" value
-          chkCertificates4 = chrome_driver.find_element_by_id('certificates-4') # US Certificates : R
-          chkCertificates4.click()
+               # set check in checkbox have "R" value
+               chkCertificates4 = chrome_driver.find_element_by_id('certificates-4') # US Certificates : R
+               chkCertificates4.click()
 
-          ddlSort = chrome_driver.find_element_by_name('sort')
-          for optionSort in ddlSort.find_elements_by_tag_name('option'):
-               if optionSort.text.strip() == 'User Rating Descending':
-                    optionSort.click() # select() in earlier versions of webdriver
-                    break
+               ddlSort = chrome_driver.find_element_by_name('sort')
+               for optionSort in ddlSort.find_elements_by_tag_name('option'):
+                    if optionSort.text.strip() == 'User Rating Descending':
+                         optionSort.click() # select() in earlier versions of webdriver
+                         break
 
-          #After opening the url above, Selenium clicks the specific submit button
-          submit_button = chrome_driver.find_element_by_class_name('primary')
-          submit_button.click() #click submit button
+               #After opening the url above, Selenium clicks the specific submit button
+               submit_button = chrome_driver.find_element_by_class_name('primary')
+               submit_button.click() #click submit button
 
-          print('2. Visit top 100 item website')
 
-          #Selenium hands the page source to Beautiful Soup
-          soup_level1 = BeautifulSoup(chrome_driver.page_source, 'lxml')
-          divMain = soup_level1.find('div', id=re.compile("^main"))
+               print('2. Visit top 100 item website')
 
-          counter = 1  
+               #Selenium hands the page source to Beautiful Soup
+               soup_level1 = BeautifulSoup(chrome_driver.page_source, 'lxml')
+               divMain = soup_level1.find('div', id=re.compile("^main"))
 
-          self._initProperties()
+               counter = 1  
 
-          print('3. Visit and Extract data from detail website')
-          #Beautiful Soup finds all Job Title links on the agency page and the loop begins
-          for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
-               detail_link_text = currentSpan.findNext('a')["href"]
+               self._initProperties()
 
-               #Selenium visits each Job Title page
-               detail_link = chrome_driver.find_element_by_xpath('//a[@href="' + detail_link_text + '"]')
-               detail_link.click() #click detail link
+               print('3. Visit and Extract data from detail website')
+               #Beautiful Soup finds all Job Title links on the agency page and the loop begins
+               for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
+                    detail_link_text = currentSpan.findNext('a')["href"]
+
+                    #Selenium visits each Job Title page
+                    detail_link = chrome_driver.find_element_by_xpath('//a[@href="' + detail_link_text + '"]')
+                    detail_link.click() #click detail link
+                    
+                    self._extract_export_lxml(detail_link_text[:detail_link_text.rindex("/")][-9:], 
+                                                  chrome_driver)
+
+                    #Ask Selenium to click the back button
+                    chrome_driver.back()
+                    
+                    print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + detail_link_text))
+                    
+                    counter += 1
+
+                    if counter == 6:
+                         break
+                    #end loop block
+               #loop has completed
+
+               #end the Selenium browser session
+               chrome_driver.quit()
+
+               print('4. Download data and export title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
+               # export to single csv file with header
+               self._export_to_file(filename="imdb_selenium",
+                                        extension="csv")
                
-               self._extract_export_lxml(detail_link_text[:detail_link_text.rindex("/")][-9:], 
-                                             chrome_driver)
+               print('5. Save imdb data into database')
+               # Calling method saveIMDbData from the parent's class (BaseScraping)
+               # self._saveIMDbData()
+          except TimeoutException:
+               raise TimeoutError("Your request has been timed out! Try overriding timeout!")
+               chrome_driver.quit()
+          except NoSuchElementException as __nsee:
+               print(__nsee)
+               chrome_driver.quit()
+          except Exception as __ex:
+               print(__ex)
+               chrome_driver.quit()
 
-               #Ask Selenium to click the back button
-               chrome_driver.back()
-               
-               print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + detail_link_text))
-               
-               counter += 1
-
-               if counter == 6:
-                    break
-               #end loop block
-          #loop has completed
-
-          #end the Selenium browser session
-          chrome_driver.quit()
-
-          print('4. Download data and export title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
-          # export to single csv file with header
-          self._export_to_file(filename="imdb_selenium",
-                                   extension="csv")
           
-          print('5. Save imdb data into database')
-          # Calling method saveIMDbData from the parent's class (BaseScraping)
-          self._saveIMDbData()
 
 class ScrapingFirefoxSelenium(BaseScraping): 
      # private data members
@@ -713,85 +733,95 @@ class ScrapingFirefoxSelenium(BaseScraping):
           # accessing protected data members of super class  
           launchUrl = self._url + "/search/title"
 
-          print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
-          # navigate to a page given by the URL
-          firefox_driver.get(launchUrl)
+          try:
+               print('1. Visit search imdb website and click submit button with filter (just 100 item, User Rating Descending,...)')
+               # navigate to a page given by the URL
+               firefox_driver.get(launchUrl)
 
-          # set check in checkbox have "IMDb Top 100" value
-          chkGroup100 = firefox_driver.find_element_by_xpath("//input[@id='groups-1']")
-          chkGroup100.click()
+               # set check in checkbox have "IMDb Top 100" value
+               chkGroup100 = firefox_driver.find_element_by_xpath("//input[@id='groups-1']")
+               chkGroup100.click()
 
-          # set check in checkbox have "G" value
-          chkCertificates1 = firefox_driver.find_element_by_id('certificates-1') # US Certificates : G
-          chkCertificates1.click()
+               # set check in checkbox have "G" value
+               chkCertificates1 = firefox_driver.find_element_by_id('certificates-1') # US Certificates : G
+               chkCertificates1.click()
 
-           # set check in checkbox have "PG" value
-          chkCertificates2 = firefox_driver.find_element_by_id('certificates-2') # US Certificates : PG
-          chkCertificates2.click()
+               # set check in checkbox have "PG" value
+               chkCertificates2 = firefox_driver.find_element_by_id('certificates-2') # US Certificates : PG
+               chkCertificates2.click()
 
-           # set check in checkbox have "PG-13" value
-          chkCertificates3 = firefox_driver.find_element_by_id('certificates-3') # US Certificates : PG-13
-          chkCertificates3.click()
+               # set check in checkbox have "PG-13" value
+               chkCertificates3 = firefox_driver.find_element_by_id('certificates-3') # US Certificates : PG-13
+               chkCertificates3.click()
 
-           # set check in checkbox have "R" value
-          chkCertificates4 = firefox_driver.find_element_by_id('certificates-4') # US Certificates : R
-          chkCertificates4.click()
+               # set check in checkbox have "R" value
+               chkCertificates4 = firefox_driver.find_element_by_id('certificates-4') # US Certificates : R
+               chkCertificates4.click()
 
-          ddlSort = firefox_driver.find_element_by_name('sort')
-          for optionSort in ddlSort.find_elements_by_tag_name('option'):
-               if optionSort.text.strip() == 'User Rating Descending':
-                    optionSort.click() # select() in earlier versions of webdriver
-                    break
+               ddlSort = firefox_driver.find_element_by_name('sort')
+               for optionSort in ddlSort.find_elements_by_tag_name('option'):
+                    if optionSort.text.strip() == 'User Rating Descending':
+                         optionSort.click() # select() in earlier versions of webdriver
+                         break
 
-          #After opening the url above, Selenium clicks the specific submit button
-          submit_button = firefox_driver.find_element_by_class_name('primary')
-          submit_button.click() #click submit button
+               #After opening the url above, Selenium clicks the specific submit button
+               submit_button = firefox_driver.find_element_by_class_name('primary')
+               submit_button.click() #click submit button
 
-          print('2. Visit list IMDb website')
+               print('2. Visit list IMDb website')
 
-          #Selenium hands the page source to Beautiful Soup
-          soup_level1 = BeautifulSoup(firefox_driver.page_source, 'lxml')
-          divMain = soup_level1.find('div', id=re.compile("^main"))
+               #Selenium hands the page source to Beautiful Soup
+               soup_level1 = BeautifulSoup(firefox_driver.page_source, 'lxml')
+               divMain = soup_level1.find('div', id=re.compile("^main"))
 
-          list_page_source = firefox_driver.page_source
+               list_page_source = firefox_driver.page_source
 
-          counter = 1  
+               counter = 1  
 
-          self._initProperties()
-          
-          print('3. Visit and Extract data from detail website')
-          #Beautiful Soup finds all Job Title links on the agency page and the loop begins
-          for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
-               detail_link_text = currentSpan.findNext('a')["href"]
-
-               detail_link = wait.until(lambda driver: driver.find_element_by_xpath('//a[contains(@href, "' + detail_link_text + '")]'))
-               detail_link.click()
-
-               self._extract_export_lxml(detail_link_text[:detail_link_text.rindex("/")][-9:], 
-                                             firefox_driver)
-
-               #Ask Selenium to click the back button
-               firefox_driver.execute_script("window.history.go(-1)") 
+               self._initProperties()
                
-               print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + detail_link_text))
+               print('3. Visit and Extract data from detail website')
+               #Beautiful Soup finds all Job Title links on the agency page and the loop begins
+               for currentSpan in divMain.findAll('span', attrs={'class':'lister-item-index'}):
+                    detail_link_text = currentSpan.findNext('a')["href"]
+
+                    detail_link = wait.until(lambda driver: driver.find_element_by_xpath('//a[contains(@href, "' + detail_link_text + '")]'))
+                    detail_link.click()
+
+                    self._extract_export_lxml(detail_link_text[:detail_link_text.rindex("/")][-9:], 
+                                                  firefox_driver)
+
+                    #Ask Selenium to click the back button
+                    firefox_driver.execute_script("window.history.go(-1)") 
+                    
+                    print(' 3.%s. Parse and Extract title, release, rating, vote,... from %s' % (counter, self._url + detail_link_text))
+                    
+                    counter += 1
+                    if counter == 6:
+                         break
+                    #end loop block
+               #loop has completed
+
+               #end the Selenium browser session
+               firefox_driver.quit()
+
+               print('4. Extract and save title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
+               # export to single csv file with header
+               self._export_to_file(filename="imdb_selenium",
+                                        extension="csv")
                
-               counter += 1
-               if counter == 6:
-                    break
-               #end loop block
-          #loop has completed
-
-          #end the Selenium browser session
-          firefox_driver.quit()
-
-          print('4. Extract and save title, release, rating, votes,... to %s\imdb_selenium.csv file' % self._csvPath)
-          # export to single csv file with header
-          self._export_to_file(filename="imdb_selenium",
-                                   extension="csv")
-          
-          print('5. Save imdb data into database')
-          # Calling protected method saveIMDbData from the parent's class (BaseScraping)
-          self._saveIMDbData()
+               print('5. Save imdb data into database')
+               # Calling protected method saveIMDbData from the parent's class (BaseScraping)
+               # self._saveIMDbData()
+          except TimeoutException:
+               raise TimeoutError("Your request has been timed out! Try overriding timeout!")
+               firefox_driver.quit()
+          except NoSuchElementException as __nsee:
+               print(__nsee)
+               firefox_driver.quit()
+          except Exception as __ex:
+               print(__ex)
+               firefox_driver.quit()
 
 
 class BusinessOperation:
