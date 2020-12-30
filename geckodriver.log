@@ -1902,3 +1902,138 @@ webdriverClickElement@chrome://marionette/content/interaction.js:182:31
 
 ###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
 
+1609301729653	geckodriver	INFO	Listening on 127.0.0.1:56027
+1609301732628	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofileAIPXfj"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609301737231	Marionette	INFO	Listening on port 56035
+1609301737349	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609301753256	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:245:13
+TimedPromise@chrome://marionette/content/sync.js:230:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:416:10
+webdriverClickElement@chrome://marionette/content/interaction.js:182:31
+[7]</e</a.prototype.getLoggedInStatus@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:1:11849
+e@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:1:11248
+[17]</</b.imdb.WatchlistRibbon.prototype._checkWatchlist@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:6270
+[17]</</b.imdb.WatchlistRibbon.prototype._init@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:1429
+[17]</</b.imdb.WatchlistRibbon@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:574
+[17]</</a.fn.watchlistRibbon@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:8887
+jQueryOnReady/<@https://www.imdb.com/search/title/?groups=top_100&certificates=US%3AG,US%3APG,US%3APG-13,US%3AR&sort=user_rating,desc:6000:22
+l@https://m.media-amazon.com/images/G/01/imdb/js/collections/common-2354271187._CB427941191_.js:94:25223
+f/</m<@https://m.media-amazon.com/images/G/01/imdb/js/collections/common-2354271187._CB427941191_.js:94:25527
+1609301753467	Marionette	INFO	Stopped listening on port 56035
+[Child 368, Chrome_ChildThread] WARNING: pipe error: 232: file /builds/worker/checkouts/gecko/ipc/chromium/src/chrome/common/ipc_channel_win.cc, line 545
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1609301835018	geckodriver	INFO	Listening on 127.0.0.1:56154
+1609301837987	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofileQgECJd"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609301843456	Marionette	INFO	Listening on port 56163
+1609301843706	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609301867797	Marionette	INFO	Stopped listening on port 56163
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1609301935084	geckodriver	INFO	Listening on 127.0.0.1:56324
+1609301938044	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofilehXGGta"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609301943062	Marionette	INFO	Listening on port 56332
+1609301943274	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript error: resource://gre/modules/URIFixup.jsm, line 271: NS_ERROR_FAILURE: Should pass a non-null uri
+1609301955141	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:245:13
+TimedPromise@chrome://marionette/content/sync.js:230:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:416:10
+webdriverClickElement@chrome://marionette/content/interaction.js:182:31
+[7]</e</a.prototype.getLoggedInStatus@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:1:11849
+e@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:1:11248
+[17]</</b.imdb.WatchlistRibbon.prototype._checkWatchlist@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:6270
+[17]</</b.imdb.WatchlistRibbon.prototype._init@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:1429
+[17]</</b.imdb.WatchlistRibbon@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:574
+[17]</</a.fn.watchlistRibbon@https://m.media-amazon.com/images/G/01/imdb/js/collections/other-3083819320._CB407268615_.js:2:8887
+jQueryOnReady/<@https://www.imdb.com/search/title/?groups=top_100&certificates=US%3AG,US%3APG,US%3APG-13,US%3AR&sort=user_rating,desc:6000:22
+l@https://m.media-amazon.com/images/G/01/imdb/js/collections/common-2354271187._CB427941191_.js:94:25223
+f/</m<@https://m.media-amazon.com/images/G/01/imdb/js/collections/common-2354271187._CB427941191_.js:94:25527
+1609301955354	Marionette	INFO	Stopped listening on port 56332
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1609301965516	geckodriver	INFO	Listening on 127.0.0.1:56394
+1609301968480	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofile3vPIlI"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609301973238	Marionette	INFO	Listening on port 56402
+1609301973728	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609301990857	Marionette	INFO	Stopped listening on port 56402
+JavaScript error: https://m.media-amazon.com/images/G/01/imdb/js/collections/common-2354271187._CB427941191_.js, line 94: NS_ERROR_NOT_INITIALIZED: 
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1609302056363	geckodriver	INFO	Listening on 127.0.0.1:56484
+1609302059331	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofile473Dwd"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609302063807	Marionette	INFO	Listening on port 56492
+1609302064051	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609302083267	Marionette	INFO	Stopped listening on port 56492
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1609307659717	geckodriver	INFO	Listening on 127.0.0.1:57569
+1609307662688	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofilexSpOML"
+console.error: SearchCache: "_readCacheFile: Error reading cache file:" (new Error("", "(unknown module)"))
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1609307674456	Marionette	INFO	Listening on port 57577
+console.error: Region.jsm: "Error fetching region" (new AbortError("The operation was aborted. ", (void 0), 689))
+console.error: Region.jsm: "Failed to fetch region" (new Error("NO_RESULT", "resource://gre/modules/Region.jsm", 343))
+1609307675093	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609307688356	Marionette	INFO	Stopped listening on port 57577
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+

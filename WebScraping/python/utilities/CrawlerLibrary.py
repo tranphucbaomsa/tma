@@ -91,9 +91,9 @@ class CrawlerOperation:
                 elif itemprop_attribute:  # Extracting value by itemprop attr: imdb_rating
                     data = self.__order_text_value_by_itemprop_lxml(driver, tag_1, class_1, order)
                 elif css_selector_inner: # Extracting value by two tag and class with order: director
-                    data = self.__text_value_css_inner_lxml(driver, tag_1, class_1, tag_2, order)
+                    data = self.__text_value_css_inner_lxml(driver, tag_1, class_1, tag_2, order, array_value)
                 elif array_value: # Extracting value by array return: actor
-                    arrValue = self.__array_item_css_inner_lxml(driver, tag_1, class_1,  tag_2, order)
+                    arrValue = self.__text_value_css_inner_lxml(driver, tag_1, class_1,  tag_2, order, array_value)
                     actor_item = ""
                     # traverse in the string   
                     for itemValue in arrValue:  
@@ -283,70 +283,27 @@ class CrawlerOperation:
         else:
             return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]").text.split(" | ")
 
-    # extract inner text values by class from webdriver
+    # extract inner text or array values by css_selector from webdriver
     def __text_value_css_inner_lxml(self, 
                                     driver, 
                                     tag, 
                                     class_=None,
                                     tag_inner=None,
-                                    order=None):   
-        if driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner):
-            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner).text
+                                    order=None,
+                                    array_value=False):   
+        if driver.find_elements(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order]:
+            if not array_value:
+                return driver.find_elements(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner).text
+            else:
+                return driver.find_elements(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_elements_by_css_selector(tag_inner)
         else:
-            return ''
-
-    # extract array in tag with class and split_separator from webdriver
-    def __array_item_css_inner_lxml(self, 
-                                    driver, 
-                                    tag, 
-                                    class_=None,
-                                    tag_inner=None,
-                                    order=None):   
-        if driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner):
-            return driver.find_element(By.XPATH, "//" + tag + "[@class=\"" + class_ + "\"]")[order].find_element_by_css_selector(tag_inner)
-        else:
-            return []
+            if not array_value:
+                return ''
+            else:
+                return []
     
     """
     -----// end private member function: can access within the class only //-----
-    """
-
-# all operation about csv file
-class CsvOperation:
-    __instance = None
-
-    @staticmethod 
-    def getInstance():
-      # Static access method.
-      if CsvOperation.__instance == None:
-         CsvOperation()
-      return CsvOperation.__instance
-
-    def __init__(self):  # init method or constructor   
-        # Virtually private constructor.
-        if CsvOperation.__instance != None:
-            raise Exception("This class is a singleton!")
-        else:
-            CsvOperation.__instance = self
-
-    """
-    -----// begin public member function: easily accessible from any part of the program //-----
-    """
-    # extracting all the information we need an turning it into a clean pandas data frame
-    # export data frame to csv format
-    def export_csv(self, 
-                    filename, 
-                    df_dict,
-                    csv_path):
-
-        df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
-
-        # export to csv format with header
-        df.to_csv(csv_path + "\\" + filename + ".csv", 
-                    header=True, 
-                    index=False)  
-    """
-    -----// end public member function: easily accessible from any part of the program //-----
     """
 
 class DateTimeOperation:

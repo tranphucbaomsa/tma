@@ -1,7 +1,7 @@
 # import CrawlerOperation, CsvOperation, DateTimeOperation class in CrawlerLibrary.py
 # import StoringData class in sqlite_process.py 
 # import constant
-from utilities.CrawlerLibrary import CrawlerOperation, CsvOperation, DateTimeOperation, ExportOperation 
+from utilities.CrawlerLibrary import CrawlerOperation, DateTimeOperation, ExportOperation 
 from data_layer.sqlite_process import StoringData
 from utilities import constant
 
@@ -285,13 +285,15 @@ class BaseScraping:
                                                                                           class_1="credit_summary_item",
                                                                                           tag_2="a",
                                                                                           text_attribute=False,
-                                                                                          order=0))
+                                                                                          order=0,
+                                                                                          css_selector_inner=True))
           self.__actors.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
                                                                                      tag_1="div", 
                                                                                      class_1="credit_summary_item",
                                                                                      tag_2="a",
                                                                                      text_attribute=False,
-                                                                                     order=2))
+                                                                                     order=2,
+                                                                                     array_value=True))
           # self.__descriptions.append(self.__crawlerOperation.extract_single_attribute_lxml(driver,
           #                                                                                 tag_1="div", 
           #                                                                                 class_1="ipc-html-content"))
@@ -405,7 +407,6 @@ class BaseScraping:
 class ScrapingNonSelenium(BaseScraping): 
      # private data members
      __crawlerOperation = None
-     __csvOperation = None
      __dtOperation = None
      __result = None
      __now = ''
@@ -413,7 +414,6 @@ class ScrapingNonSelenium(BaseScraping):
      # constructor  
      def __init__(self, csvPath):
           self.__crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
-          self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
           self.__dtOperation = DateTimeOperation.getInstance()  # Object singleton instantiation of DateTimeOperation class
           
           BaseScraping.__init__(self, csvPath)
@@ -583,9 +583,6 @@ class ScrapingNonSelenium(BaseScraping):
 
                     print('3. Download data and export title, release, rating, votes,... to %s\imdb__nonselenium_%s.csv file' % (self._csvPath, str(index + 1)))
                     # export to multi csv file with header
-                    self.__csvOperation.export_csv("imdb_nonselenium_" + str(index + 1),
-                                             df_dict_imdb,
-                                             self._csvPath)
 
                     print('4. Save imdb data into database')
                     # Calling method saveIMDbData from the parent's class (BaseScraping)
@@ -604,11 +601,9 @@ class ScrapingNonSelenium(BaseScraping):
 # derived class 
 class ScrapingChromeSelenium(BaseScraping): 
      # private data members
-     __csvOperation = None
 
      # constructor  
      def __init__(self, csvPath):
-          self.__csvOperation = CsvOperation.getInstance()  # Object singleton instantiation of CsvOperation class
           BaseScraping.__init__(self, csvPath)  
      
      # public member function  
