@@ -2037,3 +2037,76 @@ console.error: Region.jsm: "Failed to fetch region" (new Error("NO_RESULT", "res
 
 ###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
 
+1610006471503	geckodriver	INFO	Listening on 127.0.0.1:55708
+1610006474489	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofilerrv04L"
+1610006504615	geckodriver	INFO	Listening on 127.0.0.1:55727
+1610006507589	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofileK4Fw4Z"
+Can't find symbol 'eglSwapBuffersWithDamageEXT'.
+Can't find symbol 'eglSetDamageRegionKHR'.
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1610006522477	Marionette	INFO	Listening on port 55735
+1610006523201	Marionette	WARN	TLS certificate errors will be ignored for this session
+1610006547657	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:235:19
+TimedPromise@chrome://marionette/content/sync.js:220:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:418:10
+webdriverClickElement@chrome://marionette/content/interaction.js:179:31
+1610006561364	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:235:19
+TimedPromise@chrome://marionette/content/sync.js:220:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:418:10
+webdriverClickElement@chrome://marionette/content/interaction.js:179:31
+1610006565931	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:235:19
+TimedPromise@chrome://marionette/content/sync.js:220:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:418:10
+webdriverClickElement@chrome://marionette/content/interaction.js:179:31
+1610006571647	Marionette	INFO	Stopped listening on port 55735
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+1610012905574	geckodriver	INFO	Listening on 127.0.0.1:58471
+1610012908519	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-headless" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofilemWLdML"
+*** You are running in headless mode.
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1610012927676	Marionette	INFO	Listening on port 58479
+1610012928569	Marionette	WARN	TLS certificate errors will be ignored for this session
+1610012963009	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:235:19
+TimedPromise@chrome://marionette/content/sync.js:220:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:418:10
+webdriverClickElement@chrome://marionette/content/interaction.js:179:31
+[7]</e</a.prototype.getLoggedInStatus@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:1:11849
+e@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:1:11248
+[17]</</b.imdb.WatchlistRibbon.prototype._checkWatchlist@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:6270
+[17]</</b.imdb.WatchlistRibbon.prototype._init@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:1429
+[17]</</b.imdb.WatchlistRibbon@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:574
+[17]</</a.fn.watchlistRibbon@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:8887
+jQueryOnReady/<@https://www.imdb.com/search/title/?groups=top_100&certificates=US%3AG,US%3APG,US%3APG-13,US%3AR&sort=user_rating,desc:6000:22
+l@https://m.media-amazon.com/images/S/sash/wDqcPWN-$punknn.js:94:25223
+f/</m<@https://m.media-amazon.com/images/S/sash/wDqcPWN-$punknn.js:94:25527
+1610012963217	Marionette	INFO	Stopped listening on port 58479
+[Parent 16768, Gecko_IOThread] WARNING: file /builds/worker/checkouts/gecko/ipc/chromium/src/base/process_util_win.cc:166
+[Parent 16768, Gecko_IOThread] WARNING: file /builds/worker/checkouts/gecko/ipc/chromium/src/base/process_util_win.cc:166
+1610012987972	geckodriver	INFO	Listening on 127.0.0.1:58607
+1610012990863	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-headless" "--start-maximized" "-foreground" "-no-remote" "-profile" "C:\\Users\\tpbao\\AppData\\Local\\Temp\\rust_mozprofileut3hwg"
+*** You are running in headless mode.
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1610012999602	Marionette	INFO	Listening on port 58615
+1610012999869	Marionette	WARN	TLS certificate errors will be ignored for this session
+1610013015527	Marionette	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://marionette/content/sync.js:235:19
+TimedPromise@chrome://marionette/content/sync.js:220:10
+interaction.flushEventLoop@chrome://marionette/content/interaction.js:418:10
+webdriverClickElement@chrome://marionette/content/interaction.js:179:31
+[7]</e</a.prototype.getLoggedInStatus@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:1:11849
+e@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:1:11248
+[17]</</b.imdb.WatchlistRibbon.prototype._checkWatchlist@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:6270
+[17]</</b.imdb.WatchlistRibbon.prototype._init@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:1429
+[17]</</b.imdb.WatchlistRibbon@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:574
+[17]</</a.fn.watchlistRibbon@https://m.media-amazon.com/images/S/sash/NnwgjhsMUkDJ$zn.js:2:8887
+jQueryOnReady/<@https://www.imdb.com/search/title/?groups=top_100&certificates=US%3AG,US%3APG,US%3APG-13,US%3AR&sort=user_rating,desc:6237:22
+l@https://m.media-amazon.com/images/S/sash/wDqcPWN-$punknn.js:94:25223
+f/</m<@https://m.media-amazon.com/images/S/sash/wDqcPWN-$punknn.js:94:25527
+1610013015739	Marionette	INFO	Stopped listening on port 58615
+JavaScript error: resource://gre/modules/UrlClassifierListManager.jsm, line 691: TypeError: this.tablesData[table] is undefined
