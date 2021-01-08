@@ -1,12 +1,5 @@
-# We can then import these at begin
-# import ScrapingNonSelenium and ScrapingSelenium class in business_layer\scraping_process.py
-# import EnumStatusCode class in utilities\app_enum.py
-# import EnglishLocalizer and VietnameseLocalizer class in utilities\language_localize.py
-# import PathLibOperation class in utilities\CrawlerLibrary.py
-from business_layer.scraping_process import ScrapingChromeSelenium, ScrapingFirefoxSelenium
-from utilities.app_enum import EnumBrowserOptions
-from utilities.language_localize import EnglishLocalizer, VietnameseLocalizer
-from utilities.CrawlerLibrary import PathLibOperation
+from business_layer import *
+from utils import *
 
 import sys
 

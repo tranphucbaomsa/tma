@@ -11,9 +11,10 @@ os: Miscellaneous operating system interfaces
 import bs4
 import pandas as pd
 import requests
-from utilities import constant
-from utilities.app_enum import EnumStatusCode
+from . import constant
+from .app_enum import EnumStatusCode
 import os
+import sys
 
 from selenium.webdriver.common.by import By
 
@@ -355,6 +356,19 @@ class PathLibOperation:
         else:
             return True
             # os.makedirs(os.path.dirname(path))
+
+    def resource_path(self, 
+                         relative_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            # os.getcwd(): get current working directory
+            # os.path.dirname(path): get the directory name from the specified path
+            # os.path.abspath(path): get the parent directory
+            # os.pardir: a constant string used by the operating system to refer to the parent directory (‘..‘ for UNIX, Windows and ‘::‘ for Mac OS)
+            # __file__: get current filename that contain this code
+            base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        return os.path.join(base_path, relative_path)
     
 # all operation about export to file (csv, xlsx,...)
 class ExportOperation:
@@ -415,6 +429,22 @@ class ExportOperation:
                         header=True,
                         index = False)
         return "df.to_excel"
+
+    # export data frame to json format
+    def ext_json(self,
+                    df_dict,
+                    folder_path,
+                    filename):
+        df = pd.DataFrame(df_dict)  # We use pandas to visualize the data     
+
+        #convert the pandas dataframe to JSON
+        json_records = df.to_json(orient='records')
+
+        #open, write, and close the file
+        f = open(folder_path + "\\" + filename + ".json","w") #FHSU
+        f.write(json_records)
+        f.close()
+        return "df.to_json"    
     """
     -----// end public member function: easily accessible from any part of the program //-----
     """

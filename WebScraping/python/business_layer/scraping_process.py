@@ -1,9 +1,8 @@
 # import CrawlerOperation, CsvOperation, DateTimeOperation class in CrawlerLibrary.py
 # import StoringData class in sqlite_process.py 
 # import constant
-from utilities.CrawlerLibrary import CrawlerOperation, DateTimeOperation, ExportOperation 
-from data_layer.sqlite_process import StoringData
-from utilities import constant
+from utils import *
+from data_layer import *
 
 # import the necessary packages
 # selenium automates browser
@@ -34,21 +33,9 @@ class BaseScraping:
      __exportOperation = None
      __crawlerOperation = None
      __dtOperation = None
-
+     __pathLibOperation = None
+     
      __imdb = None
-     __key_item = ""
-     __title_item = ""
-     __release_item = ""
-     __audience_rating_item = ""
-     __runtime_item = ""
-     __genre_item = ""
-     __imdb_rating_item = ""
-     __vote_item = ""
-     __director_item = ""
-     __actor_item = ""
-     __desc_item = ""
-     __now = ""
-
      __keys = None
      __titles = None
      __releases = None
@@ -59,7 +46,7 @@ class BaseScraping:
      __votes = None 
      __directors = None
      __actors = None
-     __descriptions = None
+     __now = dt.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
 
      # constructor 
      def __init__(self, csvPath):   
@@ -69,22 +56,11 @@ class BaseScraping:
           self.__exportOperation = ExportOperation.getInstance()  # Object singleton instantiation of BusinessOperation class
           self.__crawlerOperation = CrawlerOperation.getInstance()  # Object singleton instantiation of CrawlerOperation class
           self.__dtOperation = DateTimeOperation.getInstance()  # Object singleton instantiation of DateTimeOperation class
+          self.__pathLibOperation = PathLibOperation.getInstance() # Object singleton instantiation of PathLibOperation class
 
      """
      -----// begin private member function: can access functions by derived class //-----
      """
-     def __resource_path(self, 
-                         relative_path):
-          try:
-               base_path = sys._MEIPASS
-          except Exception:
-               # os.getcwd(): get current working directory
-               # os.path.dirname(path): get the directory name from the specified path
-               # os.path.abspath(path): get the parent directory
-               # os.pardir: a constant string used by the operating system to refer to the parent directory (‘..‘ for UNIX, Windows and ‘::‘ for Mac OS)
-               # __file__: get current filename that contain this code
-               base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-          return os.path.join(base_path, relative_path)
      """
      -----// end private member function: can access functions by derived class //-----
      """
@@ -113,10 +89,11 @@ class BaseScraping:
 
      def _initFirefoxWebDriver(self): 
           # accessing protected member functions of super class 
-          _driverPath = self.__resource_path(constant.FIREFOX_GOCKO_DRIVER_PATH)
+          _driverPath = self.__pathLibOperation.resource_path(constant.FIREFOX_GOCKO_DRIVER_PATH)
           # Define Firefox options to open the window in maximized mode
           options = webdriver.FirefoxOptions()
-          # options.set_headless(True) # hide browser
+          # options.set_headless() # cannot hide browser in firefox
+          # assert options.headless  # Operating in headless mode
           options.add_argument("--start-maximized")
           # the instance of Firefox WebDriver is created
           driver = webdriver.Firefox(executable_path=_driverPath, options=options)
@@ -124,10 +101,11 @@ class BaseScraping:
 
      def _initChromeWebDriver(self): 
           # accessing protected member functions of super class 
-          _driverPath = self.__resource_path(constant.CHROME_DRIVER_PATH)
+          _driverPath = self.__pathLibOperation.resource_path(constant.CHROME_DRIVER_PATH)
           # Define Chrome options to open the window in maximized mode
           options = webdriver.ChromeOptions()
-          # options.set_headless(True) # hide browser
+          options.set_headless() # hide browser
+          assert options.headless  # Operating in headless mode
           options.add_argument("--start-maximized")
           # create a new Chrome session
           driver = webdriver.Chrome(executable_path=_driverPath, options=options)
@@ -340,6 +318,36 @@ class BaseScraping:
                               self.__actors[i],
                               self.__descriptions[i] ])
           self.__businessOperation.insert_multi_scrapped_data_by_list(imdbs)
+
+     # save every time one imdb item 
+     def _saveSingleIMDbData(self): 
+          self.__imdb = {
+                    "Key": "",
+                    "Title": "",
+                    "Release": "",
+                    "Audience_Rating": "",
+                    "Runtime": "",
+                    "Genre": "",
+                    "Imdb_Rating": "0.0",
+                    "Votes": "",
+                    "Director": "",
+                    "Actors": "",
+               }
+
+          # iterate over the list using index
+          for j in range(len(self.__titles)):
+               self.__imdb["Key"] = self.__keys[j].strip()
+               self.__imdb["Title"] = self.__titles[j].strip()
+               self.__imdb["Release"] = self.__releases[j]
+               self.__imdb["Audience_Rating"] = self.__audience_ratings[j]
+               self.__imdb["Runtime"] = self.__runtimes[j]
+               self.__imdb["Genre"] = self.__genres[j]
+               self.__imdb["Imdb_Rating"] = self.__imdb_ratings[j]
+               self.__imdb["Votes"] = self.__votes[j]
+               self.__imdb["Director"] = self.__directors[j]
+               self.__imdb["Actors"] = self.__actors[j]
+               
+               self.__businessOperation.insert_edit_single_scrapped_data_by_list(self.__imdb)
      """
      -----// end protected member function: can access within the class only //-----
      """
@@ -349,55 +357,6 @@ class BaseScraping:
      """
      def scrapWebsite(self): 
           print('This is base scraping')
-
-     # save every time one imdb item 
-     def saveSingleIMDbData(self,
-                         titles,
-                         releases,
-                         audience_ratings,
-                         runtimes,
-                         genres,
-                         imdb_ratings,
-                         votes,
-                         directors,
-                         actors,
-                         descriptions): 
-          __imdb = []
-
-          # iterate over the list using index
-          for j in range(len(titles)):
-               key_item = re.sub(constant.IMDB_KEY_EXPRESSION, "", titles[j])
-               title_item = titles[j]
-               release_item = releases[j] 
-               audience_rating_item = audience_ratings[j] 
-               runtime_item = runtimes[j] 
-               genre_item = genres[j]  
-               imdb_rating_item = imdb_ratings[j] 
-               vote_item = votes[j]
-               director_item = directors[j] 
-               actor_item = actors[j]
-               desc_item = descriptions[j] 
-               __now = dt.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
-
-               __imdb.clear()
-               __imdb.extend(
-                    [    key_item.strip(), 
-                         title_item.strip(), 
-                         release_item.strip(), 
-                         audience_rating_item.strip(), 
-                         runtime_item.strip(), 
-                         genre_item.strip(), 
-                         imdb_rating_item.strip(), 
-                         vote_item.strip(), 
-                         director_item.strip(), 
-                         actor_item.strip(), 
-                         desc_item.strip(),
-                         __now,
-                         __now ]
-               )
-               self.__businessOperation.insert_edit_single_scrapped_data_by_list(__imdb)
-
-     
      """
      -----// end public member function: easily accessible from any part of the program //-----
      """
@@ -700,7 +659,7 @@ class ScrapingChromeSelenium(BaseScraping):
                
                print('5. Save imdb data into database')
                # Calling method saveIMDbData from the parent's class (BaseScraping)
-               # self._saveIMDbData()
+               self._saveSingleIMDbData()
           except TimeoutException:
                raise TimeoutError("Your request has been timed out! Try overriding timeout!")
                chrome_driver.quit()
@@ -710,8 +669,6 @@ class ScrapingChromeSelenium(BaseScraping):
           except Exception as __ex:
                print(__ex)
                chrome_driver.quit()
-
-          
 
 class ScrapingFirefoxSelenium(BaseScraping): 
      # private data members
@@ -821,7 +778,6 @@ class ScrapingFirefoxSelenium(BaseScraping):
 
 class BusinessOperation:
      __instance = None
-     __now = ''
 
      @staticmethod 
      def getInstance():
@@ -858,23 +814,17 @@ class BusinessOperation:
 
      # insert or edit single item imdb
      def insert_edit_single_scrapped_data_by_list(self, 
-                                             imdb):
+                                                  imdb):
           # 1. init method or constructor                          
-          sd = StoringData.getInstance()
-          # 2. connect to the SQLite database by creating a Connection object
-          conn = sd.create_connection(os.getcwd() + constant.DB_FILE_PATH)
-          with conn:
-               # 3. check item exist or not by call read_imdb def.
-               imdb_select  = sd.read_imdb(conn, imdb[0]) 
-               if imdb_select == None:
-                    # 3.1 insert data by call create_imdb def.
-                    return sd.create_imdb(conn, imdb)  
-               else:
-                    __now = dt.datetime.now().strftime(constant.SHORT_DATETIME_FORMAT)
-                    # 3.2 update Modified_On data by call update_imdb_modifiedOn def.
-                    return sd.update_imdb_modifiedOn(conn, __now, imdb_select[0]) 
-               sd.vacuum_imdb_sqlite(conn)
-          sd.close_connection(conn)
+          mysqlDB = MySqlStoringData.getInstance()
+          # 2. check item exist or not by call read_imdb def.
+          imdb_select  = mysqlDB.read_imdb(imdb["Key"])
+          if imdb_select == None:
+               # 2.1 insert data by call create_imdb def.
+               return mysqlDB.create_imdb(imdb)
+          # else:
+          #      # 2.2 update Modified_On data by call update_imdb_modifiedOn def.
+          #      return mysqlDB.update_imdb_modifiedOn(imdb[0]) 
 
      # insert multi item imdb
      def insert_multi_scrapped_data_by_list(self, 

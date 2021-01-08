@@ -1,10 +1,11 @@
 # We can then import these at begin
-# import ViewOperation class in presentation_layer\client_app.py
-from presentation_layer.client_app import ViewOperation
+from presentation_layer import *
 
 def main():
-    viewOperation = ViewOperation.getInstance()
-    viewOperation.web_scraping_main()
+    v_op = ViewOperation.getInstance()
+    v_op.web_scraping_main()
+    # mySqlStoringData = MySqlStoringData.getInstance()
+    # mySqlStoringData.read_imdb("")
 
 if __name__ == "__main__":
     main()
