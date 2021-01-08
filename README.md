@@ -136,4 +136,5 @@ After taking a look at the IMDB webpage, we’ll set out to extract (all highlig
 *  DB-API 2.0 interface for SQLite databases: https://docs.python.org/3/library/sqlite3.html
 *  Function decorator:  https://pypi.org/project/goto-statement/
 *  System-specific parameters and functions:  https://docs.python.org/3/library/sys.html
+*   YAML parser and emitter:   https://pyyaml.org/wiki/PyYAMLDocumentation
 
